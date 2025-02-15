@@ -46,7 +46,7 @@ def load_user(user_id):
 
 @app.route('/')
 def home():
-    return render_template('welcome.html')
+    return render_template('templates/welcome.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -62,7 +62,7 @@ def login():
             return redirect(url_for('dashboard'))
         else:
             flash('Nom d’utilisateur ou mot de passe incorrect', 'error')
-    return render_template('login.html', form=form)
+    return render_template('templates/login.html', form=form)
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
@@ -92,7 +92,7 @@ def dashboard():
             db.session.rollback()
             flash(f'Erreur lors de l\'enregistrement des données : {str(e)}', 'error')
         return redirect(url_for('dashboard'))
-    return render_template('dashboard.html', form=form)
+    return render_template('templates/dashboard.html', form=form)
     
 @app.route('/visualiser_planning')
 @login_required
@@ -102,7 +102,7 @@ def visualiser_planning():
 
     # Récupérer les plannings du commercial connecté
     plannings = Planning.query.filter_by(commercial_id=current_user.id).all()
-    return render_template('visualiser_planning.html', plannings=plannings)
+    return render_template('templates/visualiser_planning.html', plannings=plannings)
 
 @app.route('/saisie_planning', methods=['GET', 'POST'])
 @login_required
@@ -134,7 +134,7 @@ def saisie_planning():
         db.session.commit()
         return redirect(url_for('visualiser_planning'))
 
-    return render_template('saisie_planning.html', formulaire=formulaire)
+    return render_template('templates/saisie_planning.html', formulaire=formulaire)
 
 @app.route('/nasmedic_dashboard')
 @login_required
@@ -183,7 +183,7 @@ def nasmedic_dashboard():
     # Afficher les données dans la console pour débogage
     print("Liste des commerciaux NASMEDIC:", commerciaux)
 
-    return render_template('nasmedic_dashboard.html', monthly_revenue_labels=monthly_revenue_labels, monthly_revenue_data=monthly_revenue_data, top_5_commerciaux=top_5_commerciaux, commerciaux=commerciaux, prospections=prospections)
+    return render_template('templates/nasmedic_dashboard.html', monthly_revenue_labels=monthly_revenue_labels, monthly_revenue_data=monthly_revenue_data, top_5_commerciaux=top_5_commerciaux, commerciaux=commerciaux, prospections=prospections)
     
 @app.route('/nasderm_dashboard')
 @login_required
@@ -232,7 +232,7 @@ def nasderm_dashboard():
     # Afficher les données dans la console pour débogage
     print("Liste des commerciaux NASDERM:", commerciaux)
 
-    return render_template('nasderm_dashboard.html', monthly_revenue_labels=monthly_revenue_labels, monthly_revenue_data=monthly_revenue_data, top_5_commerciaux=top_5_commerciaux, commerciaux=commerciaux, prospections=prospections)
+    return render_template('templates/nasderm_dashboard.html', monthly_revenue_labels=monthly_revenue_labels, monthly_revenue_data=monthly_revenue_data, top_5_commerciaux=top_5_commerciaux, commerciaux=commerciaux, prospections=prospections)
    
     
 @app.route('/admin_dashboard', methods=['GET', 'POST'])
@@ -321,7 +321,7 @@ def admin_dashboard():
         query = query.filter(Prospection.specialite == specialite)
     prospections = query.all()
     
-    return render_template('admin_dashboard.html', commerciaux=commerciaux, prospections=prospections, top_5_commerciaux=top_5_commerciaux, monthly_revenue_labels=monthly_revenue_labels, monthly_revenue_data=monthly_revenue_data)
+    return render_template('templates/admin_dashboard.html', commerciaux=commerciaux, prospections=prospections, top_5_commerciaux=top_5_commerciaux, monthly_revenue_labels=monthly_revenue_labels, monthly_revenue_data=monthly_revenue_data)
 
 # app.py
 @app.route('/admin_plannings')
@@ -333,7 +333,7 @@ def admin_plannings():
     
     # Récupérer tous les commerciaux
     commerciaux = User.query.filter_by(role='commercial').all()
-    return render_template('admin_plannings.html', commerciaux=commerciaux)
+    return render_template('Templates/admin_plannings.html', commerciaux=commerciaux)
 
 @app.route('/admin_planning_detail/<int:commercial_id>')
 @login_required
@@ -346,7 +346,7 @@ def admin_planning_detail(commercial_id):
     plannings = Planning.query.filter_by(commercial_id=commercial_id).all()
     commercial = User.query.get(commercial_id)
 
-    return render_template('admin_planning_detail.html', plannings=plannings, commercial=commercial)
+    return render_template('Templates/admin_planning_detail.html', plannings=plannings, commercial=commercial)
 
 @app.route('/commercial_dashboard/<username>', methods=['GET', 'POST'])
 @login_required
@@ -391,7 +391,7 @@ def commercial_dashboard(username):
             flash(f'Erreur lors de la génération du fichier Excel : {str(e)}', 'error')
             logger.error(f"Erreur lors de la génération du fichier Excel : {str(e)}")
 
-    return render_template('commercial_dashboard.html', commercial=commercial, prospections=prospections, form=form)
+    return render_template('Templates/commercial_dashboard.html', commercial=commercial, prospections=prospections, form=form)
 
 @app.route('/export_pdf/<username>')
 @login_required
@@ -452,7 +452,7 @@ def nova_pharma_sales():
         flash('Ventes Nova Pharma enregistrées avec succès', 'success')
         return redirect(url_for('nova_pharma_sales'))
     
-    return render_template('nova_pharma_sales.html', products=products)
+    return render_template('Templates/nova_pharma_sales.html', products=products)
 
 @app.route('/gilbert_sales', methods=['GET', 'POST'])
 @login_required
@@ -489,7 +489,7 @@ def gilbert_sales():
         flash('Ventes Gilbert enregistrées avec succès', 'success')
         return redirect(url_for('gilbert_sales'))
     
-    return render_template('gilbert_sales.html', products=products)
+    return render_template('Templates/gilbert_sales.html', products=products)
 
 @app.route('/eric_favre_sales', methods=['GET', 'POST'])
 @login_required
@@ -526,7 +526,7 @@ def eric_favre_sales():
         flash('Ventes Eric Favre enregistrées avec succès', 'success')
         return redirect(url_for('eric_favre_sales'))
     
-    return render_template('eric_favre_sales.html', products=products)
+    return render_template('Templates/eric_favre_sales.html', products=products)
 
 @app.route('/trois_chene_sales', methods=['GET', 'POST'])
 @login_required
@@ -563,7 +563,7 @@ def trois_chene_sales():
         flash('Ventes 3 Chênes Pharma enregistrées avec succès', 'success')
         return redirect(url_for('trois_chene_sales'))
     
-    return render_template('trois_chene_sales.html', products=products)
+    return render_template('Templates/trois_chene_sales.html', products=products)
 
 @app.route('/monthly_revenue')
 @login_required
@@ -613,7 +613,7 @@ def monthly_revenue():
         total = revenues['nova_pharma_revenue'] + revenues['gilbert_revenue'] + revenues['trois_chene_revenue']
         monthly_revenue.append((month, revenues['nova_pharma_revenue'], revenues['gilbert_revenue'], revenues['trois_chene_revenue'], total))
     
-    return render_template('monthly_revenue.html', monthly_revenue=monthly_revenue)
+    return render_template('Templates/monthly_revenue.html', monthly_revenue=monthly_revenue)
 
 @app.route('/monthly_revenue_nasmedic')
 @login_required
@@ -651,7 +651,7 @@ def monthly_revenue_nasmedic():
         total = revenues['eric_favre_revenue'] + revenues['trois_chene_revenue']
         monthly_revenue.append((month, revenues['eric_favre_revenue'], revenues['trois_chene_revenue'], total))
     
-    return render_template('monthly_revenue_nasmedic.html', monthly_revenue=monthly_revenue)
+    return render_template('Templates/monthly_revenue_nasmedic.html', monthly_revenue=monthly_revenue)
 
 @app.route('/monthly_revenue_nasderm')
 @login_required
@@ -689,7 +689,7 @@ def monthly_revenue_nasderm():
         total = revenues['nova_pharma_revenue'] + revenues['gilbert_revenue']
         monthly_revenue.append((month, revenues['nova_pharma_revenue'], revenues['gilbert_revenue'], total))
     
-    return render_template('monthly_revenue_nasderm.html', monthly_revenue=monthly_revenue)
+    return render_template('Templates/monthly_revenue_nasderm.html', monthly_revenue=monthly_revenue)
 
 @app.route('/monthly_revenue_detail_nasmedic/<month>')
 @login_required
@@ -712,7 +712,7 @@ def monthly_revenue_detail_nasmedic(month):
         func.sum(TroisCheneSale.quantity * TroisCheneSale.price).label('total_revenue')
     ).join(TroisCheneSale).filter(func.strftime('%Y-%m', TroisCheneSale.date) == month).group_by(TroisCheneProduct.name).all()
     
-    return render_template('monthly_revenue_detail_nasmedic.html', month=month, eric_favre_sales=eric_favre_sales, trois_chene_sales=trois_chene_sales)
+    return render_template('Templates/monthly_revenue_detail_nasmedic.html', month=month, eric_favre_sales=eric_favre_sales, trois_chene_sales=trois_chene_sales)
     
 @app.route('/monthly_revenue_detail_nasderm/<month>')
 @login_required
@@ -735,15 +735,15 @@ def monthly_revenue_detail_nasderm(month):
         func.sum(GilbertSale.quantity * GilbertSale.price).label('total_revenue')
     ).join(GilbertSale).filter(func.strftime('%Y-%m', GilbertSale.date) == month).group_by(GilbertProduct.name).all()
     
-    return render_template('monthly_revenue_detail_nasderm.html', month=month, nova_pharma_sales=nova_pharma_sales, gilbert_sales=gilbert_sales)    
+    return render_template('Templates/monthly_revenue_detail_nasderm.html', month=month, nova_pharma_sales=nova_pharma_sales, gilbert_sales=gilbert_sales)    
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html'), 404
+    return render_template('Templates/404.html'), 404
 
 @app.errorhandler(500)
 def internal_server_error(e):
-    return render_template('500.html'), 500
+    return render_template('Templates/500.html'), 500
 
 def create_initial_users():
     with app.app_context():
