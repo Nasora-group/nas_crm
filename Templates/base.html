@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM NASORA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Ajouter Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+</head>
+<body>
+    <header>
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo">
+        <h1>CRM NASORA-GROUP</h1>
+    </header>
+    <nav>
+        <a href="{{ url_for('home') }}">Accueil</a>
+        {% if current_user.is_authenticated %}
+            {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('admin_dashboard') }}">Tableau de Bord Admin</a>
+                <!-- Remplacement de la rubrique "Chiffre d'Affaire Mensuel" par deux onglets -->
+                <a href="{{ url_for('monthly_revenue_nasmedic') }}">Chiffre d'Affaire Mensuel (NASMEDIC)</a>
+                <a href="{{ url_for('monthly_revenue_nasderm') }}">Chiffre d'Affaire Mensuel (NASDERM)</a>
+				<a href="{{ url_for('admin_plannings') }}" class="btn">Voir les plannings des commerciaux</a>
+            {% else %}
+                <a href="{{ url_for('dashboard') }}">Tableau de Bord</a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}">Déconnexion</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Connexion</a>
+        {% endif %}
+    </nav>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

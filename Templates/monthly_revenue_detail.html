@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Détail du Chiffre d'Affaire pour {{ month }}</h1>
+
+{% if context == 'nasmedic' %}
+    <h2>Eric Favre</h2>
+    <table class="responsive-table">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Quantité Vendue</th>
+                <th>Chiffre d'Affaire</th>
+                <th>Stock DUOPHARM</th>
+                <th>Stock UBIPHARM</th>
+                <th>Stock LABOREX</th>
+                <th>Stock SODIPHARM</th>
+                <th>Stock Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in eric_favre_sales %}
+            <tr>
+                <td>{{ sale.name }}</td>
+                <td>{{ sale.total_quantity }}</td>
+                <td>{{ sale.total_revenue }} €</td>
+                <td>{{ sale.stock_duopharm or 0 }}</td>
+                <td>{{ sale.stock_ubipharm or 0 }}</td>
+                <td>{{ sale.stock_laborex or 0 }}</td>
+                <td>{{ sale.stock_sodipharm or 0 }}</td>
+                <td>{{ (sale.stock_duopharm or 0) + (sale.stock_ubipharm or 0) + (sale.stock_laborex or 0) + (sale.stock_sodipharm or 0) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>3 Chênes Pharma</h2>
+    <table class="responsive-table">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Quantité Vendue</th>
+                <th>Chiffre d'Affaire</th>
+                <th>Stock DUOPHARM</th>
+                <th>Stock UBIPHARM</th>
+                <th>Stock LABOREX</th>
+                <th>Stock SODIPHARM</th>
+                <th>Stock Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in trois_chene_sales %}
+            <tr>
+                <td>{{ sale.name }}</td>
+                <td>{{ sale.total_quantity }}</td>
+                <td>{{ sale.total_revenue }} €</td>
+                <td>{{ sale.stock_duopharm or 0 }}</td>
+                <td>{{ sale.stock_ubipharm or 0 }}</td>
+                <td>{{ sale.stock_laborex or 0 }}</td>
+                <td>{{ sale.stock_sodipharm or 0 }}</td>
+                <td>{{ (sale.stock_duopharm or 0) + (sale.stock_ubipharm or 0) + (sale.stock_laborex or 0) + (sale.stock_sodipharm or 0) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% elif context == 'nasderm' %}
+    <h2>Nova Pharma</h2>
+    <table class="responsive-table">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Quantité Vendue</th>
+                <th>Chiffre d'Affaire</th>
+                <th>Stock DUOPHARM</th>
+                <th>Stock UBIPHARM</th>
+                <th>Stock LABOREX</th>
+                <th>Stock SODIPHARM</th>
+                <th>Stock Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in nova_pharma_sales %}
+            <tr>
+                <td>{{ sale.name }}</td>
+                <td>{{ sale.total_quantity }}</td>
+                <td>{{ sale.total_revenue }} €</td>
+                <td>{{ sale.stock_duopharm or 0 }}</td>
+                <td>{{ sale.stock_ubipharm or 0 }}</td>
+                <td>{{ sale.stock_laborex or 0 }}</td>
+                <td>{{ sale.stock_sodipharm or 0 }}</td>
+                <td>{{ (sale.stock_duopharm or 0) + (sale.stock_ubipharm or 0) + (sale.stock_laborex or 0) + (sale.stock_sodipharm or 0) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Gilbert</h2>
+    <table class="responsive-table">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Quantité Vendue</th>
+                <th>Chiffre d'Affaire</th>
+                <th>Stock DUOPHARM</th>
+                <th>Stock UBIPHARM</th>
+                <th>Stock LABOREX</th>
+                <th>Stock SODIPHARM</th>
+                <th>Stock Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in gilbert_sales %}
+            <tr>
+                <td>{{ sale.name }}</td>
+                <td>{{ sale.total_quantity }}</td>
+                <td>{{ sale.total_revenue }} €</td>
+                <td>{{ sale.stock_duopharm or 0 }}</td>
+                <td>{{ sale.stock_ubipharm or 0 }}</td>
+                <td>{{ sale.stock_laborex or 0 }}</td>
+                <td>{{ sale.stock_sodipharm or 0 }}</td>
+                <td>{{ (sale.stock_duopharm or 0) + (sale.stock_ubipharm or 0) + (sale.stock_laborex or 0) + (sale.stock_sodipharm or 0) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+<a href="{{ url_for('monthly_revenue', context=context) }}" class="btn">Retour au chiffre d'affaire mensuel</a>
+{% endblock %}

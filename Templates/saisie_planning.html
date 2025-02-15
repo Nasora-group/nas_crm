@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Saisie du planning hebdomadaire</h1>
+
+<form method="POST">
+    {{ formulaire.hidden_tag() }}
+    <div class="form-group">
+        {{ formulaire.date.label(class="form-label") }}
+        {{ formulaire.date(class="form-input") }}
+    </div>
+
+    <!-- Lundi -->
+    <h3>Lundi</h3>
+    <div class="form-group">
+        {{ formulaire.lundi_matin.label(class="form-label") }}
+        <select name="lundi_matin" class="form-control select2" multiple="multiple">
+            {% for value, label in formulaire.lundi_matin.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        {{ formulaire.lundi_soir.label(class="form-label") }}
+        <select name="lundi_soir" class="form-control select2" multiple="multiple">
+            {% for value, label in formulaire.lundi_soir.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Mardi -->
+    <h3>Mardi</h3>
+    <div class="form-group">
+        {{ formulaire.mardi_matin.label(class="form-label") }}
+        <select name="mardi_matin" class="form-control select2" multiple="multiple">
+            {% for value, label in formulaire.mardi_matin.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        {{ formulaire.mardi_soir.label(class="form-label") }}
+        <select name="mardi_soir" class="form-control select2" multiple="multiple">
+            {% for value, label in formulaire.mardi_soir.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Mercredi -->
+    <h3>Mercredi</h3>
+    <div class="form-group">
+        {{ formulaire.mercredi_matin.label(class="form-label") }}
+        <select name="mercredi_matin" class="form-control select2" multiple="multiple">
+            {% for value, label in formulaire.mercredi_matin.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        {{ formulaire.mercredi_soir.label(class="form-label") }}
+        <select name="mercredi_soir" class="form-control select2" multiple="multiple">
+            {% for value, label in formulaire.mercredi_soir.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Jeudi -->
+    <h3>Jeudi</h3>
+    <div class="form-group">
+        {{ formulaire.jeudi_matin.label(class="form-label") }}
+        <select name="jeudi_matin" class="form-control select2" multiple="multiple">
+            {% for value, label in formulaire.jeudi_matin.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        {{ formulaire.jeudi_soir.label(class="form-label") }}
+        <select name="jeudi_soir" class="form-control select2" multiple="multiple">
+            {% for value, label in formulaire.jeudi_soir.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Vendredi -->
+    <h3>Vendredi</h3>
+    <div class="form-group">
+        {{ formulaire.vendredi_matin.label(class="form-label") }}
+        <select name="vendredi_matin" class="form-control select2" multiple="multiple">
+            {% for value, label in formulaire.vendredi_matin.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        {{ formulaire.vendredi_soir.label(class="form-label") }}
+        <select name="vendredi_soir" class="form-control select2" multiple="multiple">
+            {% for value, label in formulaire.vendredi_soir.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Samedi -->
+    <h3>Samedi</h3>
+    <div class="form-group">
+        {{ formulaire.samedi_matin.label(class="form-label") }}
+        <select name="samedi_matin" class="form-control select2" multiple="multiple">
+            {% for value, label in formulaire.samedi_matin.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        {{ formulaire.samedi_soir.label(class="form-label") }}
+        <select name="samedi_soir" class="form-control select2" multiple="multiple">
+            {% for value, label in formulaire.samedi_soir.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Dimanche -->
+    <h3>Dimanche</h3>
+    <div class="form-group">
+        {{ formulaire.dimanche_matin.label(class="form-label") }}
+        <select name="dimanche_matin" class="form-control select2" multiple="multiple">
+            {% for value, label in formulaire.dimanche_matin.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        {{ formulaire.dimanche_soir.label(class="form-label") }}
+        <select name="dimanche_soir" class="form-control select2" multiple="multiple">
+            {% for value, label in formulaire.dimanche_soir.choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        {{ formulaire.submit(class="btn-submit") }}
+    </div>
+</form>
+<a href="{{ url_for('dashboard') }}">Retour au tableau de bord</a>
+
+<!-- Initialisation de Select2 -->
+<script>
+    $(document).ready(function() {
+        $('.select2').select2();
+    });
+</script>
+{% endblock %}
