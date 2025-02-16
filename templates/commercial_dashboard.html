@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Tableau de Bord de {{ commercial.username }}</h1>
+
+<!-- Formulaire de téléchargement Excel -->
+<form method="POST" style="margin-bottom: 20px;">
+    {{ form.hidden_tag() }}  <!-- Champ CSRF -->
+    <button type="submit" name="download_excel" class="btn">Télécharger en Excel</button>
+</form>
+
+<h2>Visites Effectuées</h2>
+<table class="responsive-table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Nom Client</th>
+            <th>Spécialité</th>
+            <th>Structure</th>
+            <th>Téléphone</th>
+            <th>Profils Prospect</th>
+            <th>Produits Présentés</th>
+            <th>Produits Prescrits</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for prospection in prospections %}
+        <tr>
+            <td>{{ prospection.date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ prospection.nom_client }}</td>
+            <td>{{ prospection.specialite }}</td>
+            <td>{{ prospection.structure }}</td>
+            <td>{{ prospection.telephone }}</td>
+            <td>{{ prospection.profils_prospect }}</td>
+            <td>{{ prospection.produits_presentés }}</td>
+            <td>{{ prospection.produits_prescrits }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
