@@ -755,7 +755,7 @@ def create_initial_users():
             ("MBAYE NDOYE", "mbaye123", "THIES", 'nasmedic'),
             ("MEDINA K NDIAYE", "medina123", "ZONES INTERMEDIAIRE 2", 'nasmedic'),
             ("MARIE LOUISE", "marie123", "MBOUR", 'nasmedic'),
-            ("FATOU COLLETTE DRAME", "fatou123", "ZONES INTERMEDIAIRE 1", 'nasmedic'),
+            ("CHEIKH DIOP", "cheikh123", "ZONES INTERMEDIAIRE 1", 'nasmedic'),
             ("MASSAMBA MBAYE", "massamba123", "Banlieue 2", 'nasmedic'),
             ("LAMINE THIOUB", "lamine123", "REGION DE DIOURBEL", 'nasmedic'),
         ]
@@ -764,9 +764,9 @@ def create_initial_users():
                 db.session.add(User(username=username, password=generate_password_hash(password, method="pbkdf2:sha256"), role="commercial", zone=zone, project=project))
         
         commerciaux_nasderm = [
-            ("FAMA DIOP", "fama123", "CENTRE VILLE", 'nasderm'),
+            ("FAMA DIOP", "fama123", "THIES", 'nasderm'),
             ("MARIE JEANNE DIOUF", "marie123", "Banlieue 1", 'nasderm'),
-            ("ASTOU MANA MBENGUE", "astou123", "THIES", 'nasderm'),
+            ("ASTOU MANA MBENGUE", "astou123", "DAKAR", 'nasderm'),
             ("HONORINE", "honorine123", "ZONES INTERMEDIAIRE 2", 'nasderm'),
             ("MIJO", "mijo123", "MBOUR", 'nasderm'),
             ("HELENE FAYE", "helene123", "ZONES INTERMEDIAIRE 1", 'nasderm'),
