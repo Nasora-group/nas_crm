@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Détails du Chiffre d'Affaire - {{ month }}{% endblock %}
+
+{% block content %}
+<div class="sub-nav">
+    <a href="{{ url_for('nasderm_dashboard') }}"><i class="fas fa-tachometer-alt"></i> Tableau de Bord</a>
+    <a href="{{ url_for('monthly_revenue_nasderm') }}"><i class="fas fa-chart-line"></i> Chiffre d'Affaire</a>
+</div>
+
+<h1>Détail du Chiffre d'Affaire pour {{ month }}</h1>
+
+<div class="card">
+    <h2>Nova Pharma</h2>
+    <table class="responsive-table">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Quantité Vendue</th>
+                <th>Chiffre d'Affaire</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in nova_pharma_sales %}
+            <tr>
+                <td>{{ sale.name }}</td>
+                <td>{{ sale.total_quantity }}</td>
+                <td>{{ "%.2f"|format(sale.total_revenue) }} €</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h2>Gilbert</h2>
+    <table class="responsive-table">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Quantité Vendue</th>
+                <th>Chiffre d'Affaire</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in gilbert_sales %}
+            <tr>
+                <td>{{ sale.name }}</td>
+                <td>{{ sale.total_quantity }}</td>
+                <td>{{ "%.2f"|format(sale.total_revenue) }} €</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<a href="{{ url_for('monthly_revenue_nasderm') }}" class="btn">
+    <i class="fas fa-arrow-left"></i> Retour au chiffre d'affaire mensuel
+</a>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    $('.responsive-table').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/fr-FR.json"
+        },
+        "dom": '<"top"f>rt<"bottom"lip><"clear">',
+        "pageLength": 10
+    });
+});
+</script>
+{% endblock %}

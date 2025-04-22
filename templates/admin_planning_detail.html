@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Planning de {{ commercial.username }}</h1>
+
+<table class="responsive-table">
+    <thead>
+        <tr>
+            <th>Date de début</th>
+            <th>Lundi Matin</th>
+            <th>Lundi Soir</th>
+            <th>Mardi Matin</th>
+            <th>Mardi Soir</th>
+            <th>Mercredi Matin</th>
+            <th>Mercredi Soir</th>
+            <th>Jeudi Matin</th>
+            <th>Jeudi Soir</th>
+            <th>Vendredi Matin</th>
+            <th>Vendredi Soir</th>
+            <th>Samedi Matin</th>
+            <th>Samedi Soir</th>
+            <th>Dimanche Matin</th>
+            <th>Dimanche Soir</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for planning in plannings %}
+        <tr>
+            <td>{{ planning.date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ planning.lundi_matin }}</td>
+            <td>{{ planning.lundi_soir }}</td>
+            <td>{{ planning.mardi_matin }}</td>
+            <td>{{ planning.mardi_soir }}</td>
+            <td>{{ planning.mercredi_matin }}</td>
+            <td>{{ planning.mercredi_soir }}</td>
+            <td>{{ planning.jeudi_matin }}</td>
+            <td>{{ planning.jeudi_soir }}</td>
+            <td>{{ planning.vendredi_matin }}</td>
+            <td>{{ planning.vendredi_soir }}</td>
+            <td>{{ planning.samedi_matin }}</td>
+            <td>{{ planning.samedi_soir }}</td>
+            <td>{{ planning.dimanche_matin }}</td>
+            <td>{{ planning.dimanche_soir }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Planning de {{ commercial.username }}{% endblock %}
+
+{% block content %}
+<h1>Planning de {{ commercial.username }}</h1>
+
+{% if planning %}
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Semaine du</th>
+            <th>Lundi</th>
+            <th>Mardi</th>
+            <th>Mercredi</th>
+            <th>Jeudi</th>
+            <th>Vendredi</th>
+            <th>Samedi</th>
+            <th>Dimanche</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for semaine in planning %}
+        <tr>
+            <td>{{ semaine.date.strftime('%d/%m/%Y') }}</td>
+            <td>{{ semaine.lundi_matin }} / {{ semaine.lundi_soir }}</td>
+            <td>{{ semaine.mardi_matin }} / {{ semaine.mardi_soir }}</td>
+            <td>{{ semaine.mercredi_matin }} / {{ semaine.mercredi_soir }}</td>
+            <td>{{ semaine.jeudi_matin }} / {{ semaine.jeudi_soir }}</td>
+            <td>{{ semaine.vendredi_matin }} / {{ semaine.vendredi_soir }}</td>
+            <td>{{ semaine.samedi_matin }} / {{ semaine.samedi_soir }}</td>
+            <td>{{ semaine.dimanche_matin }} / {{ semaine.dimanche_soir }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Aucun planning trouvé pour ce commercial.</p>
+{% endif %}
+{% endblock %}

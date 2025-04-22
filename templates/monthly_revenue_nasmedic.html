@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Chiffre d'Affaire Mensuel NASMEDIC{% endblock %}
+
+{% block content %}
+<div class="sub-nav">
+    <a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Tableau de Bord</a>
+    <a href="{{ url_for('monthly_revenue_nasmedic') }}" class="active"><i class="fas fa-chart-line"></i> Chiffre d'Affaire</a>
+    <a href="{{ url_for('monthly_revenue_nasmedic') }}"><i class="fas fa-shopping-cart"></i> Ventes Eric Favre</a>
+    <a href="{{ url_for('monthly_revenue_nasmedic') }}"><i class="fas fa-shopping-cart"></i> Ventes 3 Chênes</a>
+</div>
+
+<h1>Chiffre d'Affaire Mensuel (NASMEDIC)</h1>
+
+<div class="card">
+    <div class="chart-container">
+        <canvas id="revenueChart"></canvas>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <table class="responsive-table">
+        <thead>
+            <tr>
+                <th>Mois</th>
+                <th>Eric Favre (€)</th>
+                <th>3 Chênes Pharma (€)</th>
+                <th>Total (€)</th>
+                <th>Détails</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for month, eric_favre, trois_chene in monthly_revenue %}
+            <tr>
+                <td>{{ month }}</td>
+                <td>{{ "%.2f"|format(eric_favre or 0) }}</td>
+                <td>{{ "%.2f"|format(trois_chene or 0) }}</td>
+                <td>{{ "%.2f"|format(total or 0) }}</td>
+                <td>
+                    <a href="{{ url_for('monthly_revenue_detail_nasmedic', month=month) }}" class="btn btn-sm btn-info">
+                        <i class="fas fa-eye"></i> Voir les détails
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const months = [{% for month in monthly_revenue %}'{{ month[0] }}',{% endfor %}];
+    const ericfavreData = [{% for month in monthly_revenue %}{{ month[1] }},{% endfor %}];
+    const troischeneData = [{% for month in monthly_revenue %}{{ month[2] }},{% endfor %}];
+    const totalData = [{% for month in monthly_revenue %}{{ month[3] }},{% endfor %}];
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Eric Favre',
+                    data: ericfavreData,
+                    backgroundColor: 'rgba(74, 111, 165, 0.7)',
+                    borderColor: 'rgba(74, 111, 165, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: '3 Chênes Pharma',
+                    data: troischeneData,
+                    backgroundColor: 'rgba(231, 76, 60, 0.7)',
+                    borderColor: 'rgba(231, 76, 60, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Total',
+                    data: totalData,
+                    type: 'line',
+                    borderColor: '#2ecc71',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#2ecc71'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: "Répartition du Chiffre d'Affaire Mensuel"
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Montant (€)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Mois'
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1>Tableau de Bord de {% if commercial and commercial.username %}{{ commercial.username }}{% else %}Commercial{% endif %}</h1>
+
+    <!-- Formulaire de téléchargement Excel -->
+    {% if form is defined %}
+    <form method="POST" style="margin-bottom: 20px;">
+        {{ form.hidden_tag() }}  <!-- Champ CSRF -->
+        <button type="submit" name="download_excel" class="btn btn-excel">
+            <i class="fas fa-file-excel"></i> Télécharger en Excel
+        </button>
+    </form>
+    {% else %}
+    <div class="alert alert-warning">
+        Le formulaire de téléchargement n'est pas disponible
+    </div>
+    {% endif %}
+
+    <h2>Visites Effectuées</h2>
+    
+    {% if prospections is defined and prospections %}
+    <div class="table-responsive">
+        <table class="responsive-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Nom Client</th>
+                    <th>Spécialité</th>
+                    <th>Structure</th>
+                    <th>Téléphone</th>
+                    <th>Profils Prospect</th>
+                    <th>Produits Présentés</th>
+                    <th>Produits Prescrits</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prospection in prospections %}
+                <tr>
+                    <td>{{ prospection.date.strftime('%Y-%m-%d') if prospection.date else 'N/A' }}</td>
+                    <td>{{ prospection.nom_client if prospection.nom_client else 'N/A' }}</td>
+                    <td>{{ prospection.specialite if prospection.specialite else 'N/A' }}</td>
+                    <td>{{ prospection.structure if prospection.structure else 'N/A' }}</td>
+                    <td>{{ prospection.telephone if prospection.telephone else 'N/A' }}</td>
+                    <td>{{ prospection.profils_prospect if prospection.profils_prospect else 'N/A' }}</td>
+                    <td>{{ prospection.produits_presentés if prospection.produits_presentés else 'Aucun' }}</td>
+                    <td>{{ prospection.produits_prescrits if prospection.produits_prescrits else 'Aucun' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        Aucune visite enregistrée pour le moment.
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .btn-excel {
+        background-color: #1d6f42;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    .btn-excel:hover {
+        background-color: #165a32;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+    
+    .alert-info {
+        color: #31708f;
+        background-color: #d9edf7;
+        border-color: #bce8f1;
+    }
+    
+    .alert-warning {
+        color: #8a6d3b;
+        background-color: #fcf8e3;
+        border-color: #faebcc;
+    }
+</style>
+{% endblock %}

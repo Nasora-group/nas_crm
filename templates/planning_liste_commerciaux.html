@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Planning {{ project|upper }}{% endblock %}
+
+{% block content %}
+<h1>Commerciaux de l'équipe {{ project|upper }}</h1>
+
+<ul class="list-group">
+    {% for commercial in commerciaux %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        {{ commercial.username }}
+        <a href="{{ url_for('planning_du_commercial', commercial_id=commercial.id) }}" class="btn btn-sm btn-primary">
+            Voir Planning
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

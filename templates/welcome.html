@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Plateforme Commerciale{% endblock %}
+
+{% block content %}
+<div class="jumbotron text-center">
+    <h1 class="display-4">Bienvenue sur l'espace de travail de NASORA-Groupe</h1>
+    <p class="lead">Outil de gestion des prospections et ventes pour les équipes commerciales</p>
+    <hr class="my-4">
+    <p>Connectez-vous pour accéder à votre tableau de bord</p>
+    <a class="btn btn-primary btn-lg" href="{{ url_for('login') }}" role="button">Connexion</a>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-chart-line"></i> Suivi des Performances</h5>
+                <p class="card-text">Visualisez en temps réel vos indicateurs clés de performance.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-calendar-alt"></i> Gestion du Planning</h5>
+                <p class="card-text">Planifiez vos visites et optimisez votre temps de travail.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-file-export"></i> Rapports Automatisés</h5>
+                <p class="card-text">Générez des rapports détaillés en un clic.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
