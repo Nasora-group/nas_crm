@@ -1127,5 +1127,7 @@ def create_initial_data():
         db.session.commit()
 
 if __name__ == '__main__':
-    create_initial_data()
+    with app.app_context():
+        db.create_all()
+        create_initial_data()
     app.run(debug=True)
