@@ -460,17 +460,17 @@ def admin_add_nova_pharma_sale():
         product = NovaPharmaProduct.query.get(form.product_id.data)
         quantity = form.quantity.data
         entrepot = form.entrepot.data
+        sale_date = form.sale_date.data
 
         sale = NovaPharmaSale(
             product_id=product.id,
             quantity=quantity,
             price=product.default_price * quantity,
-            date=datetime.today().date(),
+            date=sale_date,
             commercial_id=current_user.id
         )
         db.session.add(sale)
 
-        # Met à jour le stock
         if entrepot == 'DUOPHARM':
             product.stock_duopharm -= quantity
         elif entrepot == 'LABOREX':
@@ -485,7 +485,6 @@ def admin_add_nova_pharma_sale():
         return redirect(url_for('admin_add_nova_pharma_sale'))
 
     return render_template('admin_add_nova_pharma_sale.html', form=form)
-
 
 
 @app.route('/admin/nova_pharma/product/add', methods=['GET', 'POST'])
@@ -529,17 +528,18 @@ def admin_add_gilbert_sale():
     if form.validate_on_submit():
         product = GilbertProduct.query.get(form.product_id.data)
         quantity = form.quantity.data
+        entrepot = form.entrepot.data
+        sale_date = form.sale_date.data
 
         sale = GilbertSale(
             product_id=product.id,
             quantity=quantity,
             price=product.default_price * quantity,
-            date=datetime.today().date(),
+            date=sale_date,
             commercial_id=current_user.id
         )
         db.session.add(sale)
 
-        entrepot = form.entrepot.data
         if entrepot == 'DUOPHARM':
             product.stock_duopharm -= quantity
         elif entrepot == 'LABOREX':
@@ -590,17 +590,18 @@ def admin_add_eric_favre_sale():
     if form.validate_on_submit():
         product = EricFavreProduct.query.get(form.product_id.data)
         quantity = form.quantity.data
+        entrepot = form.entrepot.data
+        sale_date = form.sale_date.data
 
         sale = EricFavreSale(
             product_id=product.id,
             quantity=quantity,
             price=product.default_price * quantity,
-            date=datetime.today().date(),
+            date=sale_date,
             commercial_id=current_user.id
         )
         db.session.add(sale)
 
-        entrepot = form.entrepot.data
         if entrepot == 'DUOPHARM':
             product.stock_duopharm -= quantity
         elif entrepot == 'LABOREX':
@@ -650,17 +651,18 @@ def admin_add_trois_chene_sale():
     if form.validate_on_submit():
         product = TroisCheneProduct.query.get(form.product_id.data)
         quantity = form.quantity.data
+        entrepot = form.entrepot.data
+        sale_date = form.sale_date.data
 
         sale = TroisCheneSale(
             product_id=product.id,
             quantity=quantity,
             price=product.default_price * quantity,
-            date=datetime.today().date(),
+            date=sale_date,
             commercial_id=current_user.id
         )
         db.session.add(sale)
 
-        entrepot = form.entrepot.data
         if entrepot == 'DUOPHARM':
             product.stock_duopharm -= quantity
         elif entrepot == 'LABOREX':
@@ -675,7 +677,6 @@ def admin_add_trois_chene_sale():
         return redirect(url_for('admin_add_trois_chene_sale'))
 
     return render_template('admin_add_trois_chene_sale.html', form=form)
-
 
 @app.route('/admin/trois_chene/product/add', methods=['GET', 'POST'])
 @login_required

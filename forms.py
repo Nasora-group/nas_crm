@@ -14,14 +14,49 @@ class AdminSaleForm(FlaskForm):
         ('SODIPHARM', 'SODIPHARM')
     ], validators=[DataRequired()])
     quantity = IntegerField("Quantité", validators=[DataRequired(), NumberRange(min=1)])
+    sale_date = DateField("Date de vente", validators=[DataRequired()], default=date.today)
     submit = SubmitField("Valider la vente")
 
+class AdminGilbertSaleForm(FlaskForm):
+    product_id = SelectField('Produit', coerce=int, validators=[DataRequired()])
+    entrepot = SelectField('Entrepôt', choices=[
+        ('DUOPHARM', 'DUOPHARM'),
+        ('LABOREX', 'LABOREX'),
+        ('UBIPHARM', 'UBIPHARM'),
+        ('SODIPHARM', 'SODIPHARM')
+    ], validators=[DataRequired()])
+    quantity = IntegerField('Quantité', validators=[DataRequired(), NumberRange(min=1)])
+    sale_date = DateField("Date de vente", validators=[DataRequired()], default=date.today)
+    submit = SubmitField('Enregistrer')
+
+class AdminEricFavreSaleForm(FlaskForm):
+    product_id = SelectField('Produit', coerce=int, validators=[DataRequired()])
+    entrepot = SelectField('Entrepôt', choices=[
+        ('DUOPHARM', 'DUOPHARM'),
+        ('LABOREX', 'LABOREX'),
+        ('UBIPHARM', 'UBIPHARM'),
+        ('SODIPHARM', 'SODIPHARM')
+    ], validators=[DataRequired()])
+    quantity = IntegerField('Quantité', validators=[DataRequired(), NumberRange(min=1)])
+    sale_date = DateField("Date de vente", validators=[DataRequired()], default=date.today)
+    submit = SubmitField('Enregistrer')
+
+class AdminTroisCheneSaleForm(FlaskForm):
+    product_id = SelectField('Produit', coerce=int, validators=[DataRequired()])
+    entrepot = SelectField('Entrepôt', choices=[
+        ('DUOPHARM', 'DUOPHARM'),
+        ('LABOREX', 'LABOREX'),
+        ('UBIPHARM', 'UBIPHARM'),
+        ('SODIPHARM', 'SODIPHARM')
+    ], validators=[DataRequired()])
+    quantity = IntegerField('Quantité', validators=[DataRequired(), NumberRange(min=1)])
+    sale_date = DateField("Date de vente", validators=[DataRequired()], default=date.today)
+    submit = SubmitField('Enregistrer')
 
 class AdminProductForm(FlaskForm):
     name = StringField("Nom du produit", validators=[DataRequired()])
     price = FloatField("Prix (€)", validators=[DataRequired()])
     submit = SubmitField("Ajouter le produit")
-
 
 class LoginForm(FlaskForm):
     username = StringField("Nom d'utilisateur", validators=[DataRequired()])
@@ -41,8 +76,6 @@ class ProspectionForm(FlaskForm):
 
 class PlanningForm(FlaskForm):
     date = DateField('Date de début de la semaine', validators=[DataRequired()], default=date.today)
-
-    # Liste des choix pour les structures
     STRUCTURES = [
         ('HOPITAL', 'HOPITAL'),
         ('POSTE DE SANTE', 'POSTE DE SANTE'),
@@ -51,8 +84,6 @@ class PlanningForm(FlaskForm):
         ('SAPEUR POMPIER', 'SAPEUR POMPIER'),
         ('GENDARMERIE', 'GENDARMERIE')
     ]
-
-    # Champs pour chaque jour (matin et soir)
     lundi_matin = SelectMultipleField('Lundi Matin', choices=STRUCTURES)
     lundi_soir = SelectMultipleField('Lundi Soir', choices=STRUCTURES)
     mardi_matin = SelectMultipleField('Mardi Matin', choices=STRUCTURES)
@@ -67,7 +98,6 @@ class PlanningForm(FlaskForm):
     samedi_soir = SelectMultipleField('Samedi Soir', choices=STRUCTURES)
     dimanche_matin = SelectMultipleField('Dimanche Matin', choices=STRUCTURES)
     dimanche_soir = SelectMultipleField('Dimanche Soir', choices=STRUCTURES)
-
     submit = SubmitField('Valider le planning')
 
 class ProductSaleForm(FlaskForm):
@@ -117,38 +147,3 @@ class AddTroisCheneProductForm(FlaskForm):
     name = StringField("Nom du produit", validators=[DataRequired()])
     price = FloatField("Prix par défaut (€)", validators=[DataRequired()])
     submit = SubmitField("Ajouter")
-
-class AdminGilbertSaleForm(FlaskForm):
-    product_id = SelectField('Produit', coerce=int, validators=[DataRequired()])
-    entrepot = SelectField('Entrepôt', choices=[
-        ('DUOPHARM', 'DUOPHARM'),
-        ('LABOREX', 'LABOREX'),
-        ('UBIPHARM', 'UBIPHARM'),
-        ('SODIPHARM', 'SODIPHARM')
-    ], validators=[DataRequired()])
-    quantity = IntegerField('Quantité', validators=[DataRequired(), NumberRange(min=1)])
-    submit = SubmitField('Enregistrer')
-
-
-class AdminEricFavreSaleForm(FlaskForm):
-    product_id = SelectField('Produit', coerce=int, validators=[DataRequired()])
-    entrepot = SelectField('Entrepôt', choices=[
-        ('DUOPHARM', 'DUOPHARM'),
-        ('LABOREX', 'LABOREX'),
-        ('UBIPHARM', 'UBIPHARM'),
-        ('SODIPHARM', 'SODIPHARM')
-    ], validators=[DataRequired()])
-    quantity = IntegerField('Quantité', validators=[DataRequired(), NumberRange(min=1)])
-    submit = SubmitField('Enregistrer')
-
-
-class AdminTroisCheneSaleForm(FlaskForm):
-    product_id = SelectField('Produit', coerce=int, validators=[DataRequired()])
-    entrepot = SelectField('Entrepôt', choices=[
-        ('DUOPHARM', 'DUOPHARM'),
-        ('LABOREX', 'LABOREX'),
-        ('UBIPHARM', 'UBIPHARM'),
-        ('SODIPHARM', 'SODIPHARM')
-    ], validators=[DataRequired()])
-    quantity = IntegerField('Quantité', validators=[DataRequired(), NumberRange(min=1)])
-    submit = SubmitField('Enregistrer')
