@@ -77,6 +77,7 @@ class ProspectionForm(FlaskForm):
 class PlanningForm(FlaskForm):
     date = DateField('Date de début de la semaine', validators=[DataRequired()], default=date.today)
     STRUCTURES = [
+        ('PHARMACIE', 'PHARMACIE')
         ('HOPITAL', 'HOPITAL'),
         ('POSTE DE SANTE', 'POSTE DE SANTE'),
         ('CENTRE DE SANTE', 'CENTRE DE SANTE'),
