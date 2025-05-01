@@ -1,0 +1,76 @@
+<!-- templates/admin_prospections_filter.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Filtrer les prospections</h2>
+    
+    <form method="get" class="mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <label for="commercial_id" class="form-label">Commercial</label>
+                <select name="commercial_id" id="commercial_id" class="form-select">
+                    <option value="">Tous les commerciaux</option>
+                    {% for c in commerciaux %}
+                    <option value="{{ c.id }}" {% if c.id|string == commercial_id %}selected{% endif %}>
+                        {{ c.username }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="date_start" class="form-label">Date début</label>
+                <input type="date" name="date_start" id="date_start" class="form-control" 
+                       value="{{ date_start }}">
+            </div>
+            <div class="col-md-4">
+                <label for="date_end" class="form-label">Date fin</label>
+                <input type="date" name="date_end" id="date_end" class="form-control" 
+                       value="{{ date_end }}">
+            </div>
+        </div>
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Filtrer</button>
+            <a href="{{ url_for('filter_prospections') }}" class="btn btn-secondary">Réinitialiser</a>
+            {% if prospections %}
+            <a href="{{ url_for('export_filtered_prospections', commercial_id=commercial_id, date_start=date_start, date_end=date_end) }}" 
+               class="btn btn-success">
+                Exporter les résultats
+            </a>
+            {% endif %}
+        </div>
+    </form>
+    
+    {% if prospections %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Commercial</th>
+                <th>Client</th>
+                <th>Structure</th>
+                <th>Spécialité</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prospection in prospections %}
+            <tr>
+                <td>{{ prospection.date.strftime('%d/%m/%Y') }}</td>
+                <td>{{ prospection.commercial.username }}</td>
+                <td>{{ prospection.nom_client }}</td>
+                <td>{{ prospection.structure }}</td>
+                <td>{{ prospection.specialite }}</td>
+                <td>
+                    <a href="{{ url_for('voir_prospection_admin', prospection_id=prospection.id) }}" 
+                       class="btn btn-info btn-sm">Voir</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-info">Aucune prospection trouvée avec ces critères</div>
+    {% endif %}
+</div>
+{% endblock %}

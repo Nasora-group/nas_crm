@@ -43,28 +43,50 @@ class Prospection(db.Model):
 class Planning(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     commercial_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    date = db.Column(db.Date, nullable=False)  # Date de début de la semaine
+    date = db.Column(db.Date, nullable=False)
 
-    # Champs pour chaque jour (matin et soir)
-    lundi_matin = db.Column(db.String(200), nullable=True)
-    lundi_soir = db.Column(db.String(200), nullable=True)
-    mardi_matin = db.Column(db.String(200), nullable=True)
-    mardi_soir = db.Column(db.String(200), nullable=True)
-    mercredi_matin = db.Column(db.String(200), nullable=True)
-    mercredi_soir = db.Column(db.String(200), nullable=True)
-    jeudi_matin = db.Column(db.String(200), nullable=True)
-    jeudi_soir = db.Column(db.String(200), nullable=True)
-    vendredi_matin = db.Column(db.String(200), nullable=True)
-    vendredi_soir = db.Column(db.String(200), nullable=True)
-    samedi_matin = db.Column(db.String(200), nullable=True)
-    samedi_soir = db.Column(db.String(200), nullable=True)
-    dimanche_matin = db.Column(db.String(200), nullable=True)
-    dimanche_soir = db.Column(db.String(200), nullable=True)
+    lundi_matin = db.Column(db.PickleType)
+    lundi_matin_details = db.Column(db.Text)
 
-    commercial = db.relationship('User', backref='plannings')
-    
-    def __repr__(self):
-        return f'<Planning {self.commercial.username} - {self.date}>'
+    lundi_soir = db.Column(db.PickleType)
+    lundi_soir_details = db.Column(db.Text)
+
+    mardi_matin = db.Column(db.PickleType)
+    mardi_matin_details = db.Column(db.Text)
+
+    mardi_soir = db.Column(db.PickleType)
+    mardi_soir_details = db.Column(db.Text)
+
+    mercredi_matin = db.Column(db.PickleType)
+    mercredi_matin_details = db.Column(db.Text)
+
+    mercredi_soir = db.Column(db.PickleType)
+    mercredi_soir_details = db.Column(db.Text)
+
+    jeudi_matin = db.Column(db.PickleType)
+    jeudi_matin_details = db.Column(db.Text)
+
+    jeudi_soir = db.Column(db.PickleType)
+    jeudi_soir_details = db.Column(db.Text)
+
+    vendredi_matin = db.Column(db.PickleType)
+    vendredi_matin_details = db.Column(db.Text)
+
+    vendredi_soir = db.Column(db.PickleType)
+    vendredi_soir_details = db.Column(db.Text)
+
+    samedi_matin = db.Column(db.PickleType)
+    samedi_matin_details = db.Column(db.Text)
+
+    samedi_soir = db.Column(db.PickleType)
+    samedi_soir_details = db.Column(db.Text)
+
+    dimanche_matin = db.Column(db.PickleType)
+    dimanche_matin_details = db.Column(db.Text)
+
+    dimanche_soir = db.Column(db.PickleType)
+    dimanche_soir_details = db.Column(db.Text)
+
 
 class NovaPharmaProduct(db.Model):
     __tablename__ = 'nova_pharma_product'

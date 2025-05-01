@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Liste des Commerciaux{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Liste des Commerciaux</h2>
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Nom d'utilisateur</th>
+                <th>Zone</th>
+                <th>Projet</th>
+                <th>Voir Prospections</th>
+                <th>Exporter (Excel)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in commerciaux %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.zone }}</td>
+                <td>{{ user.project }}</td>
+                <td>
+                    <a href="{{ url_for('prospections_commercial', commercial_id=user.id) }}" class="btn btn-sm btn-info">
+                        <i class="fas fa-eye"></i> Voir
+                    </a>
+                </td>
+                <td>
+                    <a href="{{ url_for('export_prospections_commercial', commercial_id=user.id) }}" class="btn btn-sm btn-success">
+                        <i class="fas fa-file-excel"></i> Exporter
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center">Aucun commercial trouvé</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

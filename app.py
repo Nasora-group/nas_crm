@@ -1,7 +1,7 @@
 # app.py
 from flask import Flask
 from extensions import db  # On importe db depuis extensions.py
-
+from openpyxl import Workbook
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'  # Exemple avec SQLite
 db.init_app(app)  # On relie db à l'application Flask
@@ -10,7 +10,7 @@ db.init_app(app)  # On relie db à l'application Flask
 from models import User, Prospection, NovaPharmaProduct, GilbertProduct, EricFavreProduct, TroisCheneProduct, NovaPharmaSale, GilbertSale, EricFavreSale, TroisCheneSale, Planning
 
 # Le reste de ton code (routes, etc.)
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file
+from flask import Flask, render_template, request, redirect, abort, url_for, flash, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_migrate import Migrate
@@ -28,6 +28,7 @@ import logging
 from sqlalchemy.orm import aliased
 from sqlalchemy import or_
 from models import db, User, Prospection, NovaPharmaProduct, GilbertProduct, EricFavreProduct, TroisCheneProduct, NovaPharmaSale, GilbertSale, EricFavreSale, TroisCheneSale, Planning
+from sqlalchemy import extract
 
 app = Flask(__name__)
 app.secret_key = 'un_secret_key_tres_secret'  
@@ -77,39 +78,53 @@ def login():
             flash("Nom d'utilisateur ou mot de passe incorrect", "error")
     return render_template('login.html', form=form)
 
-@app.route('/dashboard', methods=['GET', 'POST'])  
+# Dashboard Commercial
+@app.route('/dashboard')
 @login_required
 def dashboard():
     try:
         form = ProspectionForm()
-        prospections = Prospection.query.filter_by(commercial_id=current_user.id).order_by(Prospection.date.desc()).all()
-        
-        # Calcul des produits présentés
-        produits_presentes_count = 0
-        for p in prospections:
-            if p.produits_presentes:
-                produits_presentes_count += len(p.produits_presentes.split(','))
-        
-        # Calcul du taux de conversion
-        if prospections:
-            prospections_avec_prescriptions = [p for p in prospections if p.produits_prescrits]
-            taux_conversion = round((len(prospections_avec_prescriptions) / len(prospections)) * 100)
-        else:
-            taux_conversion = 0
-            
+        today = date.today()
+
+        # Vérifier que current_user.id n'est pas None
+        if not current_user.is_authenticated or current_user.id is None:
+            flash("Utilisateur non authentifié", "danger")
+            return redirect(url_for('login'))
+
+        # Charger les prospections de l'utilisateur
+        prospections = Prospection.query.filter(
+            Prospection.commercial_id == current_user.id,
+            extract('month', Prospection.date) == today.month,
+            extract('year', Prospection.date) == today.year
+        ).all()
+
+        produits_presentes_count = sum(1 for p in prospections if p.produits_presentes)
+        taux_conversion = (
+            sum(1 for p in prospections if p.produits_prescrits) / produits_presentes_count * 100
+        ) if produits_presentes_count > 0 else 0
+
         return render_template('dashboard.html',
-                            form=form,
-                            prospections=prospections,
-                            produits_presentes_count=produits_presentes_count,
-                            taux_conversion=taux_conversion)
-                            
+                               form=form,
+                               prospections=prospections,
+                               produits_presentes_count=produits_presentes_count,
+                               taux_conversion=round(taux_conversion, 2))
     except Exception as e:
-        app.logger.error(f"Error in dashboard: {str(e)}")
-        return render_template('dashboard.html', 
-                            form=ProspectionForm(),
-                            prospections=[],
-                            produits_presentes_count=0,
-                            taux_conversion=0)
+        print("Erreur lors du chargement du tableau de bord:", e)
+        flash(f"Erreur lors du chargement du tableau de bord : {e}", "danger")
+        return redirect(url_for('login'))
+        
+        
+@app.route('/admin/commerciaux')
+@login_required
+def liste_commerciaux():
+    if current_user.role != 'admin':
+        flash("Accès réservé à l'administrateur.", "danger")
+        return redirect(url_for('dashboard'))
+    
+    commerciaux = User.query.filter_by(role='commercial').all()
+    return render_template('admin_commerciaux.html', commerciaux=commerciaux)
+
+
 
 @app.route('/prospection', methods=['GET', 'POST'])
 @login_required
@@ -143,29 +158,165 @@ def visualiser_planning():
     plannings = Planning.query.filter_by(commercial_id=current_user.id).all()
     return render_template('visualiser_planning.html', plannings=plannings)
 
+@app.route('/voir_prospection/<int:prospection_id>')
+@login_required
+def voir_prospection(prospection_id):
+    prospection = Prospection.query.get_or_404(prospection_id)
+    return render_template('voir_prospection.html', prospection=prospection)
+
+@app.route("/admin/prospection/<int:prospection_id>")
+@login_required
+def voir_prospection_admin(prospection_id):
+    if current_user.role != 'admin':
+        abort(403)
+    prospection = Prospection.query.get_or_404(prospection_id)
+    return render_template("voir_prospection_admin.html", prospection=prospection)
+
+
+@app.route("/admin/prospections/<int:commercial_id>")
+@login_required
+def prospections_commercial(commercial_id):
+    commercial = User.query.get_or_404(commercial_id)
+    prospections = Prospection.query.filter_by(commercial_id=commercial.id).order_by(Prospection.date.desc()).all()
+    return render_template("admin/prospections_par_commercial.html", commercial=commercial, prospections=prospections)
+
+@app.route("/admin/export_prospections/<int:commercial_id>")
+@login_required
+def export_prospections(commercial_id):
+    commercial = User.query.get_or_404(commercial_id)
+    prospections = Prospection.query.filter_by(commercial_id=commercial.id).all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.append(["Date", "Nom Client", "Structure", "Spécialité", "Téléphone", "Profil", "Produits Présentés", "Produits Prescrits"])
+
+    for p in prospections:
+        ws.append([
+            p.date.strftime('%d/%m/%Y'),
+            p.nom_client, p.structure, p.specialite, p.telephone,
+            p.profils_prospect, p.produits_presentes, p.produits_prescrits
+        ])
+
+    file_stream = BytesIO()
+    wb.save(file_stream)
+    file_stream.seek(0)
+    filename = f"Prospections_{commercial.username}.xlsx"
+
+    return send_file(file_stream, as_attachment=True, download_name=filename, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+    
+@app.route('/admin/prospections/filter', methods=['GET'])
+@login_required
+def filter_prospections():
+    if current_user.role != 'admin':
+        abort(403)
+    
+    commercial_id = request.args.get('commercial_id')
+    date_start = request.args.get('date_start')
+    date_end = request.args.get('date_end')
+    
+    query = Prospection.query.join(User)
+    
+    if commercial_id:
+        query = query.filter(Prospection.commercial_id == commercial_id)
+    if date_start:
+        query = query.filter(Prospection.date >= date_start)
+    if date_end:
+        query = query.filter(Prospection.date <= date_end)
+    
+    prospections = query.order_by(Prospection.date.desc()).all()
+    commerciaux = User.query.filter_by(role='commercial').all()
+    
+    return render_template('admin_prospections_filter.html',
+                         prospections=prospections,
+                         commerciaux=commerciaux,
+                         commercial_id=commercial_id,
+                         date_start=date_start,
+                         date_end=date_end)
+
+@app.route('/admin/export_filtered_prospections')
+@login_required
+def export_filtered_prospections():
+    if current_user.role != 'admin':
+        flash("Accès non autorisé.", "danger")
+        return redirect(url_for("dashboard"))
+
+    commercial_id = request.args.get('commercial_id')
+    date_start = request.args.get('date_start')
+    date_end = request.args.get('date_end')
+    
+    query = Prospection.query.join(User)
+    
+    if commercial_id:
+        query = query.filter(Prospection.commercial_id == commercial_id)
+    if date_start:
+        query = query.filter(Prospection.date >= date_start)
+    if date_end:
+        query = query.filter(Prospection.date <= date_end)
+    
+    prospections = query.order_by(Prospection.date.desc()).all()
+    
+    data = [{
+        "Date": p.date.strftime("%Y-%m-%d"),
+        "Nom du client": p.nom_client,
+        "Structure": p.structure,
+        "Spécialité": p.specialite,
+        "Téléphone": p.telephone,
+        "Profil prospect": p.profils_prospect,
+        "Produits présentés": p.produits_presentes,
+        "Produits prescrits": p.produits_prescrits,
+        "Commercial": p.commercial.username
+    } for p in prospections]
+
+    df = pd.DataFrame(data)
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    df.to_excel(writer, sheet_name='Prospections_filtrees', index=False)
+    writer.close()
+    output.seek(0)
+    
+    filename = 'prospections_filtrees.xlsx'
+    if commercial_id:
+        commercial = User.query.get(commercial_id)
+        filename = f'prospections_{commercial.username}.xlsx'
+    
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=filename
+    )
+
 @app.route('/saisie_planning', methods=['GET', 'POST'])
 @login_required
 def saisie_planning():
     form = PlanningForm()
-    if form.validate_on_submit():
+    
+    if request.method == 'POST' and form.validate_on_submit():
+        def combine(structures, details_dict, prefix):
+            return ", ".join([
+                f"{structure} - {details_dict.get(f'{prefix}_{structure.lower().replace(' ', '_')}', '').strip()}"
+                for structure in structures
+            ])
+
         try:
             planning = Planning(
                 commercial_id=current_user.id,
                 date=form.date.data,
-                lundi_matin=", ".join(form.lundi_matin.data),
-                lundi_soir=", ".join(form.lundi_soir.data),
-                mardi_matin=", ".join(form.mardi_matin.data),
-                mardi_soir=", ".join(form.mardi_soir.data),
-                mercredi_matin=", ".join(form.mercredi_matin.data),
-                mercredi_soir=", ".join(form.mercredi_soir.data),
-                jeudi_matin=", ".join(form.jeudi_matin.data),
-                jeudi_soir=", ".join(form.jeudi_soir.data),
-                vendredi_matin=", ".join(form.vendredi_matin.data),
-                vendredi_soir=", ".join(form.vendredi_soir.data),
-                samedi_matin=", ".join(form.samedi_matin.data),
-                samedi_soir=", ".join(form.samedi_soir.data),
-                dimanche_matin=", ".join(form.dimanche_matin.data),
-                dimanche_soir=", ".join(form.dimanche_soir.data)
+                lundi_matin=combine(form.lundi_matin.data, request.form, 'lundi_matin'),
+                lundi_soir=combine(form.lundi_soir.data, request.form, 'lundi_soir'),
+                mardi_matin=combine(form.mardi_matin.data, request.form, 'mardi_matin'),
+                mardi_soir=combine(form.mardi_soir.data, request.form, 'mardi_soir'),
+                mercredi_matin=combine(form.mercredi_matin.data, request.form, 'mercredi_matin'),
+                mercredi_soir=combine(form.mercredi_soir.data, request.form, 'mercredi_soir'),
+                jeudi_matin=combine(form.jeudi_matin.data, request.form, 'jeudi_matin'),
+                jeudi_soir=combine(form.jeudi_soir.data, request.form, 'jeudi_soir'),
+                vendredi_matin=combine(form.vendredi_matin.data, request.form, 'vendredi_matin'),
+                vendredi_soir=combine(form.vendredi_soir.data, request.form, 'vendredi_soir'),
+                samedi_matin=combine(form.samedi_matin.data, request.form, 'samedi_matin'),
+                samedi_soir=combine(form.samedi_soir.data, request.form, 'samedi_soir'),
+                dimanche_matin=combine(form.dimanche_matin.data, request.form, 'dimanche_matin'),
+                dimanche_soir=combine(form.dimanche_soir.data, request.form, 'dimanche_soir')
             )
             db.session.add(planning)
             db.session.commit()
@@ -173,8 +324,47 @@ def saisie_planning():
             return redirect(url_for('visualiser_planning'))
         except Exception as e:
             db.session.rollback()
-            flash(f"Erreur lors de l'enregistrement: {str(e)}", 'error')
+            flash(f"Erreur lors de l\'enregistrement: {str(e)}", 'error')
+
     return render_template('saisie_planning.html', form=form)
+    
+
+@app.route('/admin/export_prospections/<int:commercial_id>')
+@login_required
+def export_prospections_commercial(commercial_id):
+    if current_user.role != 'admin':
+        flash("Accès non autorisé.", "danger")
+        return redirect(url_for("dashboard"))
+
+    commercial = User.query.get_or_404(commercial_id)
+    prospections = Prospection.query.filter_by(commercial_id=commercial_id)\
+                                  .order_by(Prospection.date.desc())\
+                                  .all()
+    
+    data = [{
+        "Date": p.date.strftime("%Y-%m-%d"),
+        "Nom du client": p.nom_client,
+        "Structure": p.structure,
+        "Spécialité": p.specialite,
+        "Téléphone": p.telephone,
+        "Profil prospect": p.profils_prospect,
+        "Produits présentés": p.produits_presentes,
+        "Produits prescrits": p.produits_prescrits
+    } for p in prospections]
+
+    df = pd.DataFrame(data)
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    df.to_excel(writer, sheet_name=f'Prospections_{commercial.username}', index=False)
+    writer.close()
+    output.seek(0)
+    
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=f'prospections_{commercial.username}.xlsx'
+    )
 
 @app.route('/mes_ventes')
 @login_required
@@ -899,17 +1089,32 @@ def monthly_revenue_nasmedic():
     if current_user.project != 'nasmedic' and current_user.role != 'admin':
         flash('Accès non autorisé.', 'error')
         return redirect(url_for('home'))
-    
-    monthly_revenue = db.session.query(
+
+    monthly_revenue_raw = db.session.query(
         func.strftime('%Y-%m', EricFavreSale.date).label('month'),
         func.sum(EricFavreSale.quantity * EricFavreSale.price).label('eric_favre_revenue'),
         func.sum(TroisCheneSale.quantity * TroisCheneSale.price).label('trois_chene_revenue')
-    ).outerjoin(TroisCheneSale, func.strftime('%Y-%m', TroisCheneSale.date) == func.strftime('%Y-%m', EricFavreSale.date)) \
-     .filter(or_(EricFavreSale.project == 'nasmedic', TroisCheneSale.project == 'nasmedic')) \
-     .group_by('month').order_by('month').all()
-    
-    total = 1
-    return render_template('monthly_revenue_nasmedic.html', monthly_revenue=monthly_revenue, total=total)
+    ).outerjoin(
+        TroisCheneSale, func.strftime('%Y-%m', TroisCheneSale.date) == func.strftime('%Y-%m', EricFavreSale.date)
+    ).filter(
+        or_(EricFavreSale.project == 'nasmedic', TroisCheneSale.project == 'nasmedic')
+    ).group_by('month').order_by('month').all()
+
+    monthly_revenue = []
+    total = 0.0
+    for row in monthly_revenue_raw:
+        eric = float(row.eric_favre_revenue or 0)
+        trois = float(row.trois_chene_revenue or 0)
+        total += eric + trois
+        monthly_revenue.append({
+            'month': row.month,
+            'eric_favre': f"{eric:.2f}",
+            'trois_chene': f"{trois:.2f}",
+            'total': f"{eric + trois:.2f}"
+        })
+
+    return render_template('monthly_revenue_nasmedic.html', monthly_revenue=monthly_revenue, total=f"{total:.2f}")
+
 
 @app.route('/monthly_revenue_nasderm')
 @login_required
@@ -917,21 +1122,33 @@ def monthly_revenue_nasderm():
     if current_user.project != 'nasderm' and current_user.role != 'admin':
         flash('Accès non autorisé.', 'error')
         return redirect(url_for('home'))
-    
-    # Créer un alias pour GilbertSale
+
     gilbert_sale_alias = aliased(GilbertSale)
-    
-    # Requête modifiée pour l'utilisation de l'alias
-    monthly_revenue = db.session.query(
+
+    monthly_revenue_raw = db.session.query(
         func.strftime('%Y-%m', NovaPharmaSale.date).label('month'),
         func.sum(NovaPharmaSale.quantity * NovaPharmaSale.price).label('nova_pharma_revenue'),
         func.sum(gilbert_sale_alias.quantity * gilbert_sale_alias.price).label('gilbert_revenue')
-    ).outerjoin(gilbert_sale_alias, func.strftime('%Y-%m', gilbert_sale_alias.date) == func.strftime('%Y-%m', NovaPharmaSale.date)) \
-     .filter(or_(NovaPharmaSale.project == 'nasderm', gilbert_sale_alias.project == 'nasderm')) \
-     .group_by('month').order_by('month').all()
-    
-    total = 1
-    return render_template('monthly_revenue_nasderm.html', monthly_revenue=monthly_revenue, total=total)
+    ).outerjoin(
+        gilbert_sale_alias, func.strftime('%Y-%m', gilbert_sale_alias.date) == func.strftime('%Y-%m', NovaPharmaSale.date)
+    ).filter(
+        or_(NovaPharmaSale.project == 'nasderm', gilbert_sale_alias.project == 'nasderm')
+    ).group_by('month').order_by('month').all()
+
+    monthly_revenue = []
+    total = 0.0
+    for row in monthly_revenue_raw:
+        nova = float(row.nova_pharma_revenue or 0)
+        gilbert = float(row.gilbert_revenue or 0)
+        total += nova + gilbert
+        monthly_revenue.append({
+            'month': row.month,
+            'nova_pharma': f"{nova:.2f}",
+            'gilbert': f"{gilbert:.2f}",
+            'total': f"{nova + gilbert:.2f}"
+        })
+
+    return render_template('monthly_revenue_nasderm.html', monthly_revenue=monthly_revenue, total=f"{total:.2f}")
 
 @app.route('/monthly_revenue_detail_nasmedic/<month>')
 @login_required
@@ -939,29 +1156,32 @@ def monthly_revenue_detail_nasmedic(month):
     if current_user.project != 'nasmedic' and current_user.role != 'admin':
         flash('Accès non autorisé.', 'error')
         return redirect(url_for('home'))
-    
+
     eric_favre_sales = db.session.query(
         EricFavreProduct.name,
         func.sum(EricFavreSale.quantity).label('total_quantity'),
         func.sum(EricFavreSale.quantity * EricFavreSale.price).label('total_revenue')
-    ).join(EricFavreSale).filter(
+    ).join(EricFavreProduct, EricFavreSale.product_id == EricFavreProduct.id).filter(
         func.strftime('%Y-%m', EricFavreSale.date) == month,
         EricFavreSale.project == 'nasmedic'
     ).group_by(EricFavreProduct.name).all()
-    
+
     trois_chene_sales = db.session.query(
         TroisCheneProduct.name,
         func.sum(TroisCheneSale.quantity).label('total_quantity'),
         func.sum(TroisCheneSale.quantity * TroisCheneSale.price).label('total_revenue')
-    ).join(TroisCheneSale).filter(
+    ).join(TroisCheneProduct, TroisCheneSale.product_id == TroisCheneProduct.id).filter(
         func.strftime('%Y-%m', TroisCheneSale.date) == month,
         TroisCheneSale.project == 'nasmedic'
     ).group_by(TroisCheneProduct.name).all()
-    
-    return render_template('monthly_revenue_detail_nasmedic.html', 
-                         month=month, 
-                         eric_favre_sales=eric_favre_sales, 
-                         trois_chene_sales=trois_chene_sales)
+
+    return render_template(
+        'monthly_revenue_detail_nasmedic.html',
+        month=month,
+        eric_favre_sales=eric_favre_sales,
+        trois_chene_sales=trois_chene_sales
+    )
+
 
 @app.route('/monthly_revenue_detail_nasderm/<month>')
 @login_required
@@ -969,12 +1189,12 @@ def monthly_revenue_detail_nasderm(month):
     if current_user.project != 'nasderm' and current_user.role != 'admin':
         flash('Accès non autorisé.', 'error')
         return redirect(url_for('home'))
-    
+
     nova_pharma_sales = db.session.query(
         NovaPharmaProduct.name,
         func.sum(NovaPharmaSale.quantity).label('total_quantity'),
         func.sum(NovaPharmaSale.quantity * NovaPharmaSale.price).label('total_revenue')
-    ).join(NovaPharmaSale).filter(
+    ).join(NovaPharmaProduct, NovaPharmaSale.product_id == NovaPharmaProduct.id).filter(
         func.strftime('%Y-%m', NovaPharmaSale.date) == month,
         NovaPharmaSale.project == 'nasderm'
     ).group_by(NovaPharmaProduct.name).all()
@@ -983,15 +1203,18 @@ def monthly_revenue_detail_nasderm(month):
         GilbertProduct.name,
         func.sum(GilbertSale.quantity).label('total_quantity'),
         func.sum(GilbertSale.quantity * GilbertSale.price).label('total_revenue')
-    ).join(GilbertSale).filter(
+    ).join(GilbertProduct, GilbertSale.product_id == GilbertProduct.id).filter(
         func.strftime('%Y-%m', GilbertSale.date) == month,
         GilbertSale.project == 'nasderm'
     ).group_by(GilbertProduct.name).all()
 
-    return render_template('monthly_revenue_detail_nasderm.html', 
-                         month=month, 
-                         nova_pharma_sales=nova_pharma_sales, 
-                         gilbert_sales=gilbert_sales)
+    return render_template(
+        'monthly_revenue_detail_nasderm.html',
+        month=month,
+        nova_pharma_sales=nova_pharma_sales,
+        gilbert_sales=gilbert_sales
+    )
+
 
 
 @app.route('/logout')

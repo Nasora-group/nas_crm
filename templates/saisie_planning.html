@@ -28,45 +28,21 @@
                 <tr>
                     <th>Jour</th>
                     <th>Matin</th>
+                    <th>Détails</th>
                     <th>Soir</th>
+                    <th>Détails</th>
                 </tr>
             </thead>
             <tbody>
+                {% for jour in ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'] %}
                 <tr>
-                    <td>Lundi</td>
-                    <td>{{ form.lundi_matin(class="form-control select-multiple", multiple="multiple") }}</td>
-                    <td>{{ form.lundi_soir(class="form-control select-multiple", multiple="multiple") }}</td>
+                    <td>{{ jour.capitalize() }}</td>
+                    <td>{{ form[jour + '_matin'](class="form-control select-multiple", multiple="multiple", id=jour + '_matin') }}</td>
+                    <td><div id="details_{{ jour }}_matin"></div></td>
+                    <td>{{ form[jour + '_soir'](class="form-control select-multiple", multiple="multiple", id=jour + '_soir') }}</td>
+                    <td><div id="details_{{ jour }}_soir"></div></td>
                 </tr>
-                <tr>
-                    <td>Mardi</td>
-                    <td>{{ form.mardi_matin(class="form-control select-multiple", multiple="multiple") }}</td>
-                    <td>{{ form.mardi_soir(class="form-control select-multiple", multiple="multiple") }}</td>
-                </tr>
-                <tr>
-                    <td>Mercredi</td>
-                    <td>{{ form.mercredi_matin(class="form-control select-multiple", multiple="multiple") }}</td>
-                    <td>{{ form.mercredi_soir(class="form-control select-multiple", multiple="multiple") }}</td>
-                </tr>
-                <tr>
-                    <td>Jeudi</td>
-                    <td>{{ form.jeudi_matin(class="form-control select-multiple", multiple="multiple") }}</td>
-                    <td>{{ form.jeudi_soir(class="form-control select-multiple", multiple="multiple") }}</td>
-                </tr>
-                <tr>
-                    <td>Vendredi</td>
-                    <td>{{ form.vendredi_matin(class="form-control select-multiple", multiple="multiple") }}</td>
-                    <td>{{ form.vendredi_soir(class="form-control select-multiple", multiple="multiple") }}</td>
-                </tr>
-                <tr>
-                    <td>Samedi</td>
-                    <td>{{ form.samedi_matin(class="form-control select-multiple", multiple="multiple") }}</td>
-                    <td>{{ form.samedi_soir(class="form-control select-multiple", multiple="multiple") }}</td>
-                </tr>
-                <tr>
-                    <td>Dimanche</td>
-                    <td>{{ form.dimanche_matin(class="form-control select-multiple", multiple="multiple") }}</td>
-                    <td>{{ form.dimanche_soir(class="form-control select-multiple", multiple="multiple") }}</td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
@@ -81,5 +57,44 @@
     height: auto;
     min-height: 100px;
 }
+textarea.structure-details {
+    width: 100%;
+    margin-top: 5px;
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+    const moments = ['matin', 'soir'];
+
+    jours.forEach(jour => {
+        moments.forEach(moment => {
+            const selectId = `${jour}_${moment}`;
+            const containerId = `details_${jour}_${moment}`;
+            const selectElement = document.getElementById(selectId);
+            const container = document.getElementById(containerId);
+
+            function updateDetailsFields() {
+                container.innerHTML = '';
+                Array.from(selectElement.selectedOptions).forEach(option => {
+                    const name = `${selectId}_${option.value.toLowerCase().replace(/\s/g, '_')}`;
+                    const label = document.createElement('label');
+                    label.textContent = `Nom pour ${option.text}`;
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.name = name;
+                    input.classList.add('form-control', 'structure-details');
+                    container.appendChild(label);
+                    container.appendChild(input);
+                });
+            }
+
+            selectElement.addEventListener('change', updateDetailsFields);
+            updateDetailsFields(); // initial
+        });
+    });
+});
+</script>
+
 {% endblock %}

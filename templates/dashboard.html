@@ -1,143 +1,97 @@
 {% extends "base.html" %}
-
 {% block title %}Tableau de Bord Commercial{% endblock %}
 
 {% block content %}
 <div class="sub-nav">
     <a href="{{ url_for('dashboard') }}" class="active"><i class="fas fa-tachometer-alt"></i> Tableau de Bord</a>
     <a href="{{ url_for('visualiser_planning') }}"><i class="fas fa-calendar-alt"></i> Planning</a>
-    {% if current_user.is_authenticated and current_user.project == 'nasderm' %}
-        <a href="{{ url_for('monthly_revenue_nasderm') }}">Ventes Nova Pharma</a>
-        <a href="{{ url_for('monthly_revenue_nasderm') }}">Ventes Gilbert</a>
-    {% else %}
-        <a href="{{ url_for('monthly_revenue_nasmedic') }}">Ventes Eric Favre</a>
-        <a href="{{ url_for('monthly_revenue_nasmedic') }}">Ventes 3 Chênes</a>
-    {% endif %}
 </div>
 
 <h1>Tableau de Bord Commercial</h1>
 
-<div class="row">
+<div class="row mb-4">
     <div class="col-md-4">
-        <div class="kpi-card">
+        <div class="kpi-card bg-primary text-white p-3">
             <div class="kpi-label">Prospections ce mois</div>
-            <div class="kpi-value">{{ prospections|length if prospections is defined else 0 }}</div>
-            <div class="kpi-comparison">
-                <i class="fas fa-arrow-up"></i> 12% vs mois dernier
-            </div>
+            <div class="kpi-value">{{ prospections|length }}</div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="kpi-card">
+        <div class="kpi-card bg-success text-white p-3">
             <div class="kpi-label">Produits présentés</div>
-            <div class="kpi-value">{{ produits_presentes_count if produits_presentes_count is defined else 0 }}</div>
-            <div class="kpi-comparison">
-                <i class="fas fa-arrow-up"></i> 8% vs mois dernier
-            </div>
+            <div class="kpi-value">{{ produits_presentes_count }}</div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="kpi-card">
+        <div class="kpi-card bg-info text-white p-3">
             <div class="kpi-label">Taux de conversion</div>
-            <div class="kpi-value">{{ taux_conversion if taux_conversion is defined else 0 }}%</div>
-            <div class="kpi-comparison">
-                <i class="fas fa-arrow-up"></i> 2% vs mois dernier
-            </div>
+            <div class="kpi-value">{{ taux_conversion }}%</div>
         </div>
     </div>
 </div>
 
 {% if form is defined %}
-<div class="card">
-    <h2>Nouvelle Prospection</h2>
-    <form method="POST" action="{{ url_for('add_prospection') }}">
-        {{ form.hidden_tag() }}
-        
-        <div class="form-row">
-            <div class="form-group col-md-4">
-                {{ form.date.label if form.date is defined }}
-                {{ form.date(class="form-control") if form.date is defined }}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Ajouter une nouvelle prospection</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('add_prospection') }}">
+            {{ form.hidden_tag() }}
+            <div class="row">
+                <div class="col-md-6">{{ form.date.label }} {{ form.date(class="form-control") }}</div>
+                <div class="col-md-6">{{ form.nom_client.label }} {{ form.nom_client(class="form-control") }}</div>
+                <div class="col-md-6">{{ form.structure.label }} {{ form.structure(class="form-control") }}</div>
+                <div class="col-md-6">{{ form.specialite.label }} {{ form.specialite(class="form-control") }}</div>
+                <div class="col-md-6">{{ form.telephone.label }} {{ form.telephone(class="form-control") }}</div>
+                <div class="col-md-12">{{ form.profils_prospect.label }} {{ form.profils_prospect(class="form-control", rows="2") }}</div>
+                <div class="col-md-12">{{ form.produits_presentes.label }} {{ form.produits_presentes(class="form-control", rows="2") }}</div>
+                <div class="col-md-12">{{ form.produits_prescrits.label }} {{ form.produits_prescrits(class="form-control", rows="2") }}</div>
             </div>
-            <div class="form-group col-md-4">
-                {{ form.nom_client.label if form.nom_client is defined }}
-                {{ form.nom_client(class="form-control") if form.nom_client is defined }}
-            </div>
-            <div class="form-group col-md-4">
-                {{ form.structure.label if form.structure is defined }}
-                {{ form.structure(class="form-control") if form.structure is defined }}
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group col-md-4">
-                {{ form.specialite.label if form.specialite is defined }}
-                {{ form.specialite(class="form-control") if form.specialite is defined }}
-            </div>
-            <div class="form-group col-md-4">
-                {{ form.telephone.label if form.telephone is defined }}
-                {{ form.telephone(class="form-control") if form.telephone is defined }}
-            </div>
-        </div>
-
-        <div class="form-group">
-            {{ form.profils_prospect.label if form.profils_prospect is defined }}
-            {{ form.profils_prospect(class="form-control", rows=2) if form.profils_prospect is defined }}
-        </div>
-
-        <div class="form-group">
-            {{ form.produits_presentés.label if form.produits_presentés is defined }}
-            {{ form.produits_presentés(class="form-control", rows=2) if form.produits_presentés is defined }}
-        </div>
-
-        <div class="form-group">
-            {{ form.produits_prescrits.label if form.produits_prescrits is defined }}
-            {{ form.produits_prescrits(class="form-control", rows=2) if form.produits_prescrits is defined }}
-        </div>
-
-        <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save"></i> Enregistrer
-        </button>
-    </form>
+            <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save"></i> Enregistrer</button>
+        </form>
+    </div>
 </div>
 {% endif %}
 
+<!-- Dernières prospections -->
 <div class="card">
-    <h2>Dernières Prospections</h2>
-    <table class="responsive-table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Client</th>
-                <th>Structure</th>
-                <th>Produits Présentés</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% if prospections is defined and prospections %}
+    <div class="card-header">
+        <h5>Dernières Prospections</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Client</th>
+                    <th>Structure</th>
+                    <th>Produits Présentés</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
                 {% for prospection in prospections[-5:]|reverse %}
                 <tr>
-                    <td>{{ prospection.date.strftime('%d/%m/%Y') if prospection.date is defined }}</td>
-                    <td>{{ prospection.nom_client if prospection.nom_client is defined }}</td>
-                    <td>{{ prospection.structure if prospection.structure is defined }}</td>
-                    <td>{{ prospection.produits_presentés[:50] if prospection.produits_presentés is defined }}{% if prospection.produits_presentés is defined and prospection.produits_presentés|length > 50 %}...{% endif %}</td>
+                    <td>{{ prospection.date.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ prospection.nom_client }}</td>
+                    <td>{{ prospection.structure }}</td>
+                    <td>{{ prospection.produits_presentes[:50] if prospection.produits_presentes else '' }}{% if prospection.produits_presentes and prospection.produits_presentes|length > 50 %}...{% endif %}</td>
+
                     <td>
-                        <a href="#" class="btn btn-sm btn-info">
+                        <a href="{{ url_for('voir_prospection', prospection_id=prospection.id) }}" class="btn btn-sm btn-info">
                             <i class="fas fa-eye"></i> Voir
                         </a>
                     </td>
                 </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center">Aucune prospection disponible</td></tr>
                 {% endfor %}
-            {% else %}
-                <tr>
-                    <td colspan="5" class="text-center">Aucune prospection disponible</td>
-                </tr>
-            {% endif %}
-        </tbody>
-    </table>
-    <a href="#" class="btn btn-secondary mt-3">
-        <i class="fas fa-list"></i> Voir toutes les prospections
-    </a>
+            </tbody>
+        </table>
+        <a href="{{ url_for('prospections_commercial', commercial_id=current_user.id) }}" class="btn btn-secondary mt-3">
+            <i class="fas fa-list"></i> Voir toutes les prospections
+        </a>
+    </div>
 </div>
-
 {% endblock %}

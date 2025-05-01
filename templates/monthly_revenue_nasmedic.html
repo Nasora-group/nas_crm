@@ -30,15 +30,15 @@
             </tr>
         </thead>
         <tbody>
-            {% for month, eric_favre, trois_chene in monthly_revenue %}
+            {% for row in monthly_revenue %}
             <tr>
-                <td>{{ month }}</td>
-                <td>{{ "%.2f"|format(eric_favre or 0) }}</td>
-                <td>{{ "%.2f"|format(trois_chene or 0) }}</td>
-                <td>{{ "%.2f"|format(total or 0) }}</td>
+                <td>{{ row.month }}</td>
+                <td>{{ row.eric_favre }}</td>
+                <td>{{ row.trois_chene }}</td>
+                <td>{{ row.total }}</td>
                 <td>
-                    <a href="{{ url_for('monthly_revenue_detail_nasmedic', month=month) }}" class="btn btn-sm btn-info">
-                        <i class="fas fa-eye"></i> Voir les détails
+                    <a href="{{ url_for('monthly_revenue_detail_nasmedic', month=row.month) }}" class="btn btn-sm btn-info">
+                        <<i class="fas fa-eye"></i> Détails
                     </a>
                 </td>
             </tr>

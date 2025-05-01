@@ -5,6 +5,10 @@ from datetime import date
 from wtforms.fields import DateField
 from wtforms.widgets import TextArea
 
+
+class DownloadExcelForm(FlaskForm):
+    submit = SubmitField('Exporter en Excel')
+
 class AdminSaleForm(FlaskForm):
     product_id = SelectField("Produit", coerce=int, validators=[DataRequired()])
     entrepot = SelectField("Entrepôt", choices=[
@@ -76,8 +80,9 @@ class ProspectionForm(FlaskForm):
 
 class PlanningForm(FlaskForm):
     date = DateField('Date de début de la semaine', validators=[DataRequired()], default=date.today)
+
     STRUCTURES = [
-        ('PHARMACIE', 'PHARMACIE')
+        ('PHARMACIE', 'PHARMACIE'),
         ('HOPITAL', 'HOPITAL'),
         ('POSTE DE SANTE', 'POSTE DE SANTE'),
         ('CENTRE DE SANTE', 'CENTRE DE SANTE'),
@@ -85,21 +90,52 @@ class PlanningForm(FlaskForm):
         ('SAPEUR POMPIER', 'SAPEUR POMPIER'),
         ('GENDARMERIE', 'GENDARMERIE')
     ]
+
+    # Champs de sélection des structures
     lundi_matin = SelectMultipleField('Lundi Matin', choices=STRUCTURES)
+    lundi_matin_details = TextAreaField('Détails Lundi Matin (Nom des structures)')
+
     lundi_soir = SelectMultipleField('Lundi Soir', choices=STRUCTURES)
+    lundi_soir_details = TextAreaField('Détails Lundi Soir')
+
     mardi_matin = SelectMultipleField('Mardi Matin', choices=STRUCTURES)
+    mardi_matin_details = TextAreaField('Détails Mardi Matin')
+
     mardi_soir = SelectMultipleField('Mardi Soir', choices=STRUCTURES)
+    mardi_soir_details = TextAreaField('Détails Mardi Soir')
+
     mercredi_matin = SelectMultipleField('Mercredi Matin', choices=STRUCTURES)
+    mercredi_matin_details = TextAreaField('Détails Mercredi Matin')
+
     mercredi_soir = SelectMultipleField('Mercredi Soir', choices=STRUCTURES)
+    mercredi_soir_details = TextAreaField('Détails Mercredi Soir')
+
     jeudi_matin = SelectMultipleField('Jeudi Matin', choices=STRUCTURES)
+    jeudi_matin_details = TextAreaField('Détails Jeudi Matin')
+
     jeudi_soir = SelectMultipleField('Jeudi Soir', choices=STRUCTURES)
+    jeudi_soir_details = TextAreaField('Détails Jeudi Soir')
+
     vendredi_matin = SelectMultipleField('Vendredi Matin', choices=STRUCTURES)
+    vendredi_matin_details = TextAreaField('Détails Vendredi Matin')
+
     vendredi_soir = SelectMultipleField('Vendredi Soir', choices=STRUCTURES)
+    vendredi_soir_details = TextAreaField('Détails Vendredi Soir')
+
     samedi_matin = SelectMultipleField('Samedi Matin', choices=STRUCTURES)
+    samedi_matin_details = TextAreaField('Détails Samedi Matin')
+
     samedi_soir = SelectMultipleField('Samedi Soir', choices=STRUCTURES)
+    samedi_soir_details = TextAreaField('Détails Samedi Soir')
+
     dimanche_matin = SelectMultipleField('Dimanche Matin', choices=STRUCTURES)
+    dimanche_matin_details = TextAreaField('Détails Dimanche Matin')
+
     dimanche_soir = SelectMultipleField('Dimanche Soir', choices=STRUCTURES)
+    dimanche_soir_details = TextAreaField('Détails Dimanche Soir')
+
     submit = SubmitField('Valider le planning')
+
 
 class ProductSaleForm(FlaskForm):
     sale_date = DateField('Date de saisie', validators=[DataRequired()], default=date.today)
