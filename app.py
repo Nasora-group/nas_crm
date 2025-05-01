@@ -291,42 +291,54 @@ def export_filtered_prospections():
 @login_required
 def saisie_planning():
     form = PlanningForm()
-    
-    if request.method == 'POST' and form.validate_on_submit():
-        def combine(structures, details_dict, prefix):
-            return ", ".join([
-                f"{structure} - {details_dict.get(f'{prefix}_{structure.lower().replace(' ', '_')}', '').strip()}"
-                for structure in structures
-            ])
+    if form.validate_on_submit():
+        details_dict = request.form.to_dict()
+        jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
+        periodes = ['matin', 'soir']
 
-        try:
-            planning = Planning(
-                commercial_id=current_user.id,
-                date=form.date.data,
-                lundi_matin=combine(form.lundi_matin.data, request.form, 'lundi_matin'),
-                lundi_soir=combine(form.lundi_soir.data, request.form, 'lundi_soir'),
-                mardi_matin=combine(form.mardi_matin.data, request.form, 'mardi_matin'),
-                mardi_soir=combine(form.mardi_soir.data, request.form, 'mardi_soir'),
-                mercredi_matin=combine(form.mercredi_matin.data, request.form, 'mercredi_matin'),
-                mercredi_soir=combine(form.mercredi_soir.data, request.form, 'mercredi_soir'),
-                jeudi_matin=combine(form.jeudi_matin.data, request.form, 'jeudi_matin'),
-                jeudi_soir=combine(form.jeudi_soir.data, request.form, 'jeudi_soir'),
-                vendredi_matin=combine(form.vendredi_matin.data, request.form, 'vendredi_matin'),
-                vendredi_soir=combine(form.vendredi_soir.data, request.form, 'vendredi_soir'),
-                samedi_matin=combine(form.samedi_matin.data, request.form, 'samedi_matin'),
-                samedi_soir=combine(form.samedi_soir.data, request.form, 'samedi_soir'),
-                dimanche_matin=combine(form.dimanche_matin.data, request.form, 'dimanche_matin'),
-                dimanche_soir=combine(form.dimanche_soir.data, request.form, 'dimanche_soir')
-            )
-            db.session.add(planning)
-            db.session.commit()
-            flash('Planning enregistré avec succès', 'success')
-            return redirect(url_for('visualiser_planning'))
-        except Exception as e:
-            db.session.rollback()
-            flash(f"Erreur lors de l\'enregistrement: {str(e)}", 'error')
+        for jour in jours:
+            for periode in periodes:
+                # Récupération des structures sélectionnées (ex: ['PHARMACIE', 'CLINIQUE'])
+                field_name = f"{jour}_{periode}"
+                structures = getattr(form, field_name).data  # liste
+
+                results = []
+                for structure in structures:
+                    key = f"{field_name}_{structure.lower().replace(' ', '_')}"  # ex: lundi_matin_centre_de_sante
+                    detail = details_dict.get(key, '').strip()
+                    results.append(f"{structure} - {detail}")
+
+                formatted_value = "\n".join(results)
+
+                setattr(form, field_name, formatted_value)  # on remplace la liste par une string
+
+        # Création du planning
+        planning = Planning(
+            commercial_id=current_user.id,
+            date=form.date.data,
+            lundi_matin=form.lundi_matin,
+            lundi_soir=form.lundi_soir,
+            mardi_matin=form.mardi_matin,
+            mardi_soir=form.mardi_soir,
+            mercredi_matin=form.mercredi_matin,
+            mercredi_soir=form.mercredi_soir,
+            jeudi_matin=form.jeudi_matin,
+            jeudi_soir=form.jeudi_soir,
+            vendredi_matin=form.vendredi_matin,
+            vendredi_soir=form.vendredi_soir,
+            samedi_matin=form.samedi_matin,
+            samedi_soir=form.samedi_soir,
+            dimanche_matin=form.dimanche_matin,
+            dimanche_soir=form.dimanche_soir
+        )
+
+        db.session.add(planning)
+        db.session.commit()
+        flash('Planning enregistré avec succès.', 'success')
+        return redirect(url_for('visualiser_planning'))
 
     return render_template('saisie_planning.html', form=form)
+
     
 
 @app.route('/admin/export_prospections/<int:commercial_id>')
