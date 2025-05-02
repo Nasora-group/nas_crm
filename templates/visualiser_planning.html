@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Visualiser Planning{% endblock %}
+
+{% block content %}
+<div class="sub-nav">
+    <a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Tableau de Bord</a>
+    <a href="{{ url_for('visualiser_planning') }}" class="active"><i class="fas fa-calendar-alt"></i> Planning</a>
+    <a href="{{ url_for('saisie_planning') }}"><i class="fas fa-edit"></i> Saisie Planning</a>
+</div>
+
+<h1>Mon Planning</h1>
+
+{% for planning in plannings %}
+<div class="card mb-4">
+    <div class="card-header">
+        Semaine du {{ planning.date.strftime('%d/%m/%Y') }}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Jour</th>
+                        <th>Matin</th>
+                        <th>Soir</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Lundi</td>
+                        <td>{{ planning.lundi_matin or '-' }}</td>
+                        <td>{{ planning.lundi_soir or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td>Mardi</td>
+                        <td>{{ planning.mardi_matin or '-' }}</td>
+                        <td>{{ planning.mardi_soir or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td>Mercredi</td>
+                        <td>{{ planning.mercredi_matin or '-' }}</td>
+                        <td>{{ planning.mercredi_soir or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td>Jeudi</td>
+                        <td>{{ planning.jeudi_matin or '-' }}</td>
+                        <td>{{ planning.jeudi_soir or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td>Vendredi</td>
+                        <td>{{ planning.vendredi_matin or '-' }}</td>
+                        <td>{{ planning.vendredi_soir or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td>Samedi</td>
+                        <td>{{ planning.samedi_matin or '-' }}</td>
+                        <td>{{ planning.samedi_soir or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td>Dimanche</td>
+                        <td>{{ planning.dimanche_matin or '-' }}</td>
+                        <td>{{ planning.dimanche_soir or '-' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    Aucun planning enregistré pour le moment.
+</div>
+{% endfor %}
+
+<a href="{{ url_for('saisie_planning') }}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Créer un nouveau planning
+</a>
+{% endblock %}

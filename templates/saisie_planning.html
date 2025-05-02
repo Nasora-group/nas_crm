@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Saisie Planning{% endblock %}
+
+{% block content %}
+<div class="sub-nav">
+    <a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Tableau de Bord</a>
+    <a href="{{ url_for('visualiser_planning') }}"><i class="fas fa-calendar-alt"></i> Planning</a>
+    <a href="{{ url_for('saisie_planning') }}" class="active"><i class="fas fa-edit"></i> Saisie Planning</a>
+</div>
+
+<h1>Saisie du Planning Hebdomadaire</h1>
+
+<form method="POST" class="card">
+    {{ form.hidden_tag() }}
+
+    <div class="form-group">
+        {{ form.date.label }}
+        {{ form.date(class="form-control") }}
+        {% for error in form.date.errors %}
+            <small class="text-danger">{{ error }}</small>
+        {% endfor %}
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="thead-light">
+                <tr>
+                    <th>Jour</th>
+                    <th>Matin</th>
+                    <th>Détails</th>
+                    <th>Soir</th>
+                    <th>Détails</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for jour in ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'] %}
+                <tr>
+                    <td>{{ jour.capitalize() }}</td>
+                    <td>{{ form[jour + '_matin'](class="form-control select-multiple", multiple="multiple", id=jour + '_matin') }}</td>
+                    <td><div id="details_{{ jour }}_matin"></div></td>
+                    <td>{{ form[jour + '_soir'](class="form-control select-multiple", multiple="multiple", id=jour + '_soir') }}</td>
+                    <td><div id="details_{{ jour }}_soir"></div></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <button type="submit" class="btn btn-success">
+        <i class="fas fa-save"></i> Enregistrer le planning
+    </button>
+</form>
+
+<style>
+.select-multiple {
+    height: auto;
+    min-height: 100px;
+}
+textarea.structure-details {
+    width: 100%;
+    margin-top: 5px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+    const moments = ['matin', 'soir'];
+
+    jours.forEach(jour => {
+        moments.forEach(moment => {
+            const selectId = `${jour}_${moment}`;
+            const containerId = `details_${jour}_${moment}`;
+            const selectElement = document.getElementById(selectId);
+            const container = document.getElementById(containerId);
+
+            function updateDetailsFields() {
+                container.innerHTML = '';
+                Array.from(selectElement.selectedOptions).forEach(option => {
+                    const name = `${selectId}_${option.value.toLowerCase().replace(/\s/g, '_')}`;
+                    const label = document.createElement('label');
+                    label.textContent = `Nom pour ${option.text}`;
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.name = name;
+                    input.classList.add('form-control', 'structure-details');
+                    container.appendChild(label);
+                    container.appendChild(input);
+                });
+            }
+
+            selectElement.addEventListener('change', updateDetailsFields);
+            updateDetailsFields(); // initial
+        });
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,23 @@
+<!-- templates/voir_prospection_admin.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Détails de la prospection</h2>
+    <div class="card">
+        <div class="card-body">
+            <p><strong>Commercial:</strong> {{ prospection.commercial.username }}</p>
+            <p><strong>Date:</strong> {{ prospection.date.strftime('%d/%m/%Y') }}</p>
+            <p><strong>Nom du client:</strong> {{ prospection.nom_client }}</p>
+            <p><strong>Structure:</strong> {{ prospection.structure }}</p>
+            <p><strong>Spécialité:</strong> {{ prospection.specialite }}</p>
+            <p><strong>Téléphone:</strong> {{ prospection.telephone }}</p>
+            <p><strong>Profils prospect:</strong> {{ prospection.profils_prospect or 'Non renseigné' }}</p>
+            <p><strong>Produits présentés:</strong> {{ prospection.produits_presentes or 'Non renseigné' }}</p>
+            <p><strong>Produits prescrits:</strong> {{ prospection.produits_prescrits or 'Non renseigné' }}</p>
+            <a href="{{ url_for('prospections_commercial', commercial_id=prospection.commercial_id) }}" 
+               class="btn btn-primary">Retour</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

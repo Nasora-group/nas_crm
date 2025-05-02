@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Liste des Commerciaux{% endblock %}
+
+{% block content %}
+<h1>Liste des Commerciaux</h1>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Zone</th>
+            <th>Projet</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for commercial in commerciaux %}
+        <tr>
+            <td>{{ commercial.username }}</td>
+            <td>{{ commercial.zone }}</td>
+            <td>{{ commercial.project }}</td>
+            <td>
+                <a href="{{ url_for('prospections_commercial', commercial_id=commercial.id) }}" class="btn btn-info btn-sm">
+                    Voir les rapports
+                </a>
+                <a href="{{ url_for('export_prospections', commercial_id=commercial.id) }}" class="btn btn-success btn-sm">
+                    Exporter en Excel
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

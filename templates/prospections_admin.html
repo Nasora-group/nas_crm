@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Prospections de {{ user.username }}</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Nom client</th>
+            <th>Structure</th>
+            <th>Spécialité</th>
+            <th>Téléphone</th>
+            <th>Détails</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for p in prospections %}
+        <tr>
+            <td>{{ p.date }}</td>
+            <td>{{ p.nom_client }}</td>
+            <td>{{ p.structure }}</td>
+            <td>{{ p.specialite }}</td>
+            <td>{{ p.telephone }}</td>
+            <td><a href="{{ url_for('voir_prospection', prospection_id=p.id) }}" class="btn btn-sm btn-info">Voir</a></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<a href="{{ url_for('export_prospections_excel', commercial_id=user.id) }}" class="btn btn-success">Exporter en Excel</a>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Tableau de Bord Commercial{% endblock %}
+
+{% block content %}
+<div class="sub-nav">
+    <a href="{{ url_for('dashboard') }}" class="active"><i class="fas fa-tachometer-alt"></i> Tableau de Bord</a>
+    <a href="{{ url_for('visualiser_planning') }}"><i class="fas fa-calendar-alt"></i> Planning</a>
+</div>
+
+<h1>Tableau de Bord Commercial</h1>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="kpi-card bg-primary text-white p-3">
+            <div class="kpi-label">Prospections ce mois</div>
+            <div class="kpi-value">{{ prospections|length }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card bg-success text-white p-3">
+            <div class="kpi-label">Produits présentés</div>
+            <div class="kpi-value">{{ produits_presentes_count }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card bg-info text-white p-3">
+            <div class="kpi-label">Taux de conversion</div>
+            <div class="kpi-value">{{ taux_conversion }}%</div>
+        </div>
+    </div>
+</div>
+
+{% if form is defined %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Ajouter une nouvelle prospection</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('add_prospection') }}">
+            {{ form.hidden_tag() }}
+            <div class="row">
+                <div class="col-md-6">{{ form.date.label }} {{ form.date(class="form-control") }}</div>
+                <div class="col-md-6">{{ form.nom_client.label }} {{ form.nom_client(class="form-control") }}</div>
+                <div class="col-md-6">{{ form.structure.label }} {{ form.structure(class="form-control") }}</div>
+                <div class="col-md-6">{{ form.specialite.label }} {{ form.specialite(class="form-control") }}</div>
+                <div class="col-md-6">{{ form.telephone.label }} {{ form.telephone(class="form-control") }}</div>
+                <div class="col-md-12">{{ form.profils_prospect.label }} {{ form.profils_prospect(class="form-control", rows="2") }}</div>
+                <div class="col-md-12">{{ form.produits_presentes.label }} {{ form.produits_presentes(class="form-control", rows="2") }}</div>
+                <div class="col-md-12">{{ form.produits_prescrits.label }} {{ form.produits_prescrits(class="form-control", rows="2") }}</div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save"></i> Enregistrer</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<!-- Dernières prospections -->
+<div class="card">
+    <div class="card-header">
+        <h5>Dernières Prospections</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Client</th>
+                    <th>Structure</th>
+                    <th>Produits Présentés</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prospection in prospections[-5:]|reverse %}
+                <tr>
+                    <td>{{ prospection.date.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ prospection.nom_client }}</td>
+                    <td>{{ prospection.structure }}</td>
+                    <td>{{ prospection.produits_presentes[:50] if prospection.produits_presentes else '' }}{% if prospection.produits_presentes and prospection.produits_presentes|length > 50 %}...{% endif %}</td>
+
+                    <td>
+                        <a href="{{ url_for('voir_prospection', prospection_id=prospection.id) }}" class="btn btn-sm btn-info">
+                            <i class="fas fa-eye"></i> Voir
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center">Aucune prospection disponible</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('prospections_commercial', commercial_id=current_user.id) }}" class="btn btn-secondary mt-3">
+            <i class="fas fa-list"></i> Voir toutes les prospections
+        </a>
+    </div>
+</div>
+{% endblock %}

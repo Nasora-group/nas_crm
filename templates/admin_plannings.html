@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Plannings des commerciaux</h1>
+
+<table class="responsive-table">
+    <thead>
+        <tr>
+            <th>Commercial</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for commercial in commerciaux %}
+        <tr>
+            <td>{{ commercial.username }}</td>
+            <td><a href="{{ url_for('admin_planning_detail', commercial_id=commercial.id) }}">Voir le planning</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

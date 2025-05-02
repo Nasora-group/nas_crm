@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Mes Ventes{% endblock %}
+{% block content %}
+<h2>Mes ventes enregistrées</h2>
+
+{% if ventes_eric %}
+    <h3>Eric Favre</h3>
+    <ul>
+        {% for v in ventes_eric %}
+            <li>{{ v.product.name }} - {{ v.quantity }} unités - {{ v.date.strftime('%d/%m/%Y') }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% if ventes_trois %}
+    <h3>3 Chênes Pharma</h3>
+    <ul>
+        {% for v in ventes_trois %}
+            <li>{{ v.product.name }} - {{ v.quantity }} unités - {{ v.date.strftime('%d/%m/%Y') }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% if ventes_nova %}
+    <h3>Nova Pharma</h3>
+    <ul>
+        {% for v in ventes_nova %}
+            <li>{{ v.product.name }} - {{ v.quantity }} unités - {{ v.date.strftime('%d/%m/%Y') }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% if ventes_gilbert %}
+    <h3>Gilbert</h3>
+    <ul>
+        {% for v in ventes_gilbert %}
+            <li>{{ v.product.name }} - {{ v.quantity }} unités - {{ v.date.strftime('%d/%m/%Y') }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% endblock %}

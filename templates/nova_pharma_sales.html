@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Ventes Nova Pharma{% endblock %}
+
+{% block content %}
+<div class="sub-nav">
+    <a href="{{ url_for('nasderm_dashboard') }}"><i class="fas fa-tachometer-alt"></i> Tableau de Bord</a>
+    <a href="{{ url_for('monthly_revenue_nasderm') }}"><i class="fas fa-chart-line"></i> Chiffre d'Affaire</a>
+    <a href="{{ url_for('nova_pharma_sales') }}" class="active"><i class="fas fa-shopping-cart"></i> Ventes Nova Pharma</a>
+    <a href="{{ url_for('gilbert_sales') }}"><i class="fas fa-shopping-cart"></i> Ventes Gilbert</a>
+</div>
+
+<h1>Enregistrement des Ventes - Nova Pharma</h1>
+
+<form method="POST" class="card">
+    <div class="form-group">
+        <label for="sale_date">Date de vente</label>
+        <input type="date" id="sale_date" name="sale_date" class="form-control" required value="{{ request.form.sale_date or datetime.now().strftime('%Y-%m-%d') }}">
+    </div>
+
+    <table class="responsive-table">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Prix Unitaire (€)</th>
+                <th>Quantité</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>
+                    <input type="number" step="0.01" name="price_{{ product.id }}" class="form-control" 
+                           value="{{ request.form.get('price_' + product.id|string, '%.2f'|format(product.default_price)) }}" min="0">
+                </td>
+                <td>
+                    <input type="number" name="quantity_{{ product.id }}" class="form-control" 
+                           value="{{ request.form.get('quantity_' + product.id|string, '0') }}" min="0">
+                </td>
+                <td>
+                    <span class="product-total">0.00 €</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-success">
+        <i class="fas fa-save"></i> Enregistrer les ventes
+    </button>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Calcul du total pour chaque produit
+    document.querySelectorAll('input[name^="quantity_"], input[name^="price_"]').forEach(input => {
+        input.addEventListener('input', calculateTotals);
+    });
+
+    function calculateTotals() {
+        document.querySelectorAll('tbody tr').forEach(row => {
+            const priceInput = row.querySelector('input[name^="price_"]');
+            const quantityInput = row.querySelector('input[name^="quantity_"]');
+            const totalSpan = row.querySelector('.product-total');
+            
+            if (priceInput && quantityInput && totalSpan) {
+                const price = parseFloat(priceInput.value) || 0;
+                const quantity = parseInt(quantityInput.value) || 0;
+                const total = price * quantity;
+                totalSpan.textContent = total.toFixed(2) + ' €';
+            }
+        });
+    }
+
+    // Initial calculation
+    calculateTotals();
+});
+</script>
+{% endblock %}

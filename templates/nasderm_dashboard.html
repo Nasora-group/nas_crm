@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de Bord NASDERM{% endblock %}
+
+{% block content %}
+<div class="sub-nav">
+    <a href="{{ url_for('nasderm_dashboard') }}"><i class="fas fa-tachometer-alt"></i> Tableau de Bord</a>
+    <a href="{{ url_for('monthly_revenue_nasderm') }}"><i class="fas fa-chart-line"></i> Chiffre d'Affaire</a>
+    <a href="{{ url_for('planning_par_projet', project='nasderm') }}"><i class="fas fa-calendar-alt"></i> Planning NASDERM</a>
+
+    {% if current_user.role == 'admin' %}
+    <hr>
+    <h5>🛠️ Admin - NASDERM</h5>
+    <a href="{{ url_for('admin_add_nova_pharma_sale') }}">➕ Vente Nova Pharma</a>
+    <a href="{{ url_for('admin_add_gilbert_sale') }}">➕ Vente Gilbert</a>
+    <a href="{{ url_for('add_nova_pharma_product') }}">🆕 Produit Nova Pharma</a>
+    <a href="{{ url_for('add_gilbert_product') }}">🆕 Produit Gilbert</a>
+    {% endif %}
+</div>
+
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div class="kpi-label">Chiffre d'Affaire Total</div>
+            <div class="kpi-value">{{ "%.2f"|format(total_revenue) }} €</div>
+            <div class="kpi-comparison">
+                <i class="fas fa-arrow-up"></i> 5.2% vs mois dernier
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div class="kpi-label">Visites Commerciales</div>
+            <div class="kpi-value">{{ total_visits }}</div>
+            <div class="kpi-comparison">
+                <i class="fas fa-arrow-up"></i> 12% vs mois dernier
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-card">
+            <div class="kpi-label">Produits Présentés</div>
+            <div class="kpi-value">{{ prospections|selectattr('produits_presentés')|list|length }}</div>
+            <div class="kpi-comparison">
+                <i class="fas fa-arrow-up"></i> 8.7% vs mois dernier
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Évolution du Chiffre d'Affaire</h2>
+    <div class="chart-container">
+        <canvas id="revenueChart"></canvas>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <h2>Top 5 Commerciaux</h2>
+            <table class="responsive-table">
+                <thead>
+                    <tr>
+                        <th>Commercial</th>
+                        <th>Zone</th>
+                        <th>Visites</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commercial in top_5_commerciaux %}
+                    <tr>
+                        <td>{{ commercial.username }}</td>
+                        <td>{{ commercial.zone }}</td>
+                        <td>{{ commercial.nombre_visites }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <h2>Filtres</h2>
+            <form method="get" class="filter-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="date_start">Date de début</label>
+                        <input type="date" id="date_start" name="date_start" class="form-control" value="{{ date_start }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="date_end">Date de fin</label>
+                        <input type="date" id="date_end" name="date_end" class="form-control" value="{{ date_end }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="commercial">Commercial</label>
+                        <select id="commercial" name="commercial" class="form-control">
+                            <option value="">Tous les commerciaux</option>
+                            {% for commercial in commerciaux %}
+                            <option value="{{ commercial.id }}" {% if commercial_id|string == commercial.id|string %}selected{% endif %}>{{ commercial.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Appliquer les filtres</button>
+                <a href="{{ url_for('nasderm_dashboard') }}" class="btn btn-secondary">Réinitialiser</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Dernières Prospections</h2>
+    <table class="responsive-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Commercial</th>
+                <th>Client</th>
+                <th>Structure</th>
+                <th>Produits Présentés</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prospection in prospections[-5:] %}
+            <tr>
+                <td>{{ prospection.date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ prospection.commercial.username }}</td>
+                <td>{{ prospection.nom_client }}</td>
+                <td>{{ prospection.structure }}</td>
+                <td>
+                    {% if prospection.produits_presentes %}
+                        {{ prospection.produits_presentes[:50] }}
+                        {% if prospection.produits_presentes|length > 50 %}...{% endif %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('nasderm_dashboard') }}" class="btn">Voir toutes mes prospections</a>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ monthly_revenue_labels|tojson }},
+            datasets: [
+                {
+                    label: 'Nova Pharma',
+                    data: {{ monthly_revenue_nova|tojson }},
+                    borderColor: '#4a6fa5',
+                    backgroundColor: 'rgba(74, 111, 165, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                },
+                {
+                    label: 'Gilbert',
+                    data: {{ monthly_revenue_gilbert|tojson }},
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                },
+                {
+                    label: 'Total',
+                    data: {{ monthly_revenue_total|tojson }},
+                    borderColor: '#2ecc71',
+                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Évolution du Chiffre d\'Affaire Mensuel'
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Montant (€)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Mois'
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
