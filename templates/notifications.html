@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Mes Notifications</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Non lues
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for notif in unread %}
+            <li class="list-group-item">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <strong>{{ notif.message }}</strong>
+                        <small class="text-muted">{{ notif.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                    </div>
+                    <a href="{{ url_for('mark_notification_as_read', notification_id=notif.id) }}" class="btn btn-sm btn-success">
+                        Marquer comme lu
+                    </a>
+                </div>
+            </li>
+            {% else %}
+            <li class="list-group-item">Aucune notification non lue</li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            Notifications lues
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for notif in read %}
+            <li class="list-group-item">
+                <div>{{ notif.message }}</div>
+                <small class="text-muted">{{ notif.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+            </li>
+            {% else %}
+            <li class="list-group-item">Aucune notification lue récente</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

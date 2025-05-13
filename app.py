@@ -50,7 +50,7 @@ db.init_app(app)
 
 migrate = Migrate(app, db)
 
-login_manager = LoginManager(app)
+login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
@@ -141,7 +141,65 @@ def liste_commerciaux():
     commerciaux = User.query.filter_by(role='commercial').all()
     return render_template('admin_commerciaux.html', commerciaux=commerciaux)
 
+# Nouvelle fonction pour calculer le CA mensuel par commercial
+@app.route('/api/ca_mensuel/<int:commercial_id>')
+@login_required
+def ca_mensuel_commercial(commercial_id):
+    if current_user.role != 'admin' and current_user.id != commercial_id:
+        abort(403)
+    
+    # Calcul pour NASMEDIC
+    eric_ca = db.session.query(
+        func.strftime('%Y-%m', EricFavreSale.date).label('mois'),
+        func.sum(EricFavreSale.quantity * EricFavreSale.price).label('ca')
+    ).filter(
+        EricFavreSale.commercial_id == commercial_id
+    ).group_by('mois').all()
 
+    trois_chene_ca = db.session.query(
+        func.strftime('%Y-%m', TroisCheneSale.date).label('mois'),
+        func.sum(TroisCheneSale.quantity * TroisCheneSale.price).label('ca')
+    ).filter(
+        TroisCheneSale.commercial_id == commercial_id
+    ).group_by('mois').all()
+
+    # Calcul pour NASDERM
+    nova_ca = db.session.query(
+        func.strftime('%Y-%m', NovaPharmaSale.date).label('mois'),
+        func.sum(NovaPharmaSale.quantity * NovaPharmaSale.price).label('ca')
+    ).filter(
+        NovaPharmaSale.commercial_id == commercial_id
+    ).group_by('mois').all()
+
+    gilbert_ca = db.session.query(
+        func.strftime('%Y-%m', GilbertSale.date).label('mois'),
+        func.sum(GilbertSale.quantity * GilbertSale.price).label('ca')
+    ).filter(
+        GilbertSale.commercial_id == commercial_id
+    ).group_by('mois').all()
+
+    # Fusion des résultats
+    results = {}
+    for ca in [eric_ca, trois_chene_ca, nova_ca, gilbert_ca]:
+        for row in ca:
+            if row.mois not in results:
+                results[row.mois] = {'eric_favre': 0, 'trois_chene': 0, 'nova_pharma': 0, 'gilbert': 0, 'total': 0}
+            if ca == eric_ca:
+                results[row.mois]['eric_favre'] = float(row.ca or 0)
+            elif ca == trois_chene_ca:
+                results[row.mois]['trois_chene'] = float(row.ca or 0)
+            elif ca == nova_ca:
+                results[row.mois]['nova_pharma'] = float(row.ca or 0)
+            elif ca == gilbert_ca:
+                results[row.mois]['gilbert'] = float(row.ca or 0)
+            results[row.mois]['total'] = sum([
+                results[row.mois]['eric_favre'],
+                results[row.mois]['trois_chene'],
+                results[row.mois]['nova_pharma'],
+                results[row.mois]['gilbert']
+            ])
+
+    return jsonify(results)
 
 @app.route('/prospection', methods=['GET', 'POST'])
 @login_required
@@ -169,25 +227,295 @@ def add_prospection():
             flash(f"Erreur lors de l'enregistrement: {str(e)}", 'error')
     return render_template('add_prospection.html', form=form)
 
+@app.route('/prospection/list')
+@login_required
+def prospection_list():
+    """Affiche la liste des prospections du commercial"""
+    prospections = Prospection.query.filter_by(commercial_id=current_user.id).order_by(Prospection.date.desc()).all()
+    return render_template('prospection_list.html', prospections=prospections)
+
+@app.route('/prospection/<int:prospection_id>')
+@login_required
+def voir_prospection(prospection_id):
+    """Affiche les détails d'une prospection"""
+    prospection = Prospection.query.get_or_404(prospection_id)
+    if prospection.commercial_id != current_user.id and current_user.role != 'admin':
+        abort(403)
+    return render_template('voir_prospection.html', prospection=prospection)
+
+@app.route('/edit_prospection/<int:prospection_id>', methods=['GET', 'POST'])
+@login_required
+def edit_prospection(prospection_id):
+    prospection = Prospection.query.get_or_404(prospection_id)
+    
+    # Vérification des droits
+    if current_user.id != prospection.commercial_id and current_user.role != 'admin':
+        abort(403)
+    
+    form = ProspectionForm(obj=prospection)
+    
+    if form.validate_on_submit():
+        try:
+            form.populate_obj(prospection)
+            db.session.commit()
+            flash('Prospection modifiée avec succès', 'success')
+            return redirect(url_for('dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Erreur lors de la modification: {str(e)}", 'error')
+    
+    return render_template('edit_prospection.html', form=form, prospection=prospection)
+
+@app.route('/ventes')
+@login_required
+def ventes():
+    """Route générale pour les ventes - Redirige vers la page appropriée selon le projet"""
+    if current_user.project == 'nasmedic':
+        # Pour NASMEDIC: Eric Favre et 3 Chênes
+        return render_template('ventes_nasmedic.html', 
+                            ventes_eric=EricFavreSale.query.filter_by(commercial_id=current_user.id).all(),
+                            ventes_trois=TroisCheneSale.query.filter_by(commercial_id=current_user.id).all())
+    else:
+        # Pour NASDERM: Nova Pharma et Gilbert
+        return render_template('ventes_nasderm.html',
+                            ventes_nova=NovaPharmaSale.query.filter_by(commercial_id=current_user.id).all(),
+                            ventes_gilbert=GilbertSale.query.filter_by(commercial_id=current_user.id).all())
+
+@app.route('/delete_prospection/<int:prospection_id>')
+@login_required
+def delete_prospection(prospection_id):
+    prospection = Prospection.query.get_or_404(prospection_id)
+    
+    if current_user.id != prospection.commercial_id and current_user.role != 'admin':
+        abort(403)
+    
+    try:
+        db.session.delete(prospection)
+        db.session.commit()
+        flash('Prospection supprimée avec succès', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Erreur lors de la suppression: {str(e)}", 'error')
+    
+    return redirect(url_for('dashboard'))
+    
+@app.route('/edit_planning/<int:planning_id>', methods=['GET', 'POST'])
+@login_required
+def edit_planning(planning_id):
+    planning = Planning.query.get_or_404(planning_id)
+    
+    if current_user.id != planning.commercial_id and current_user.role != 'admin':
+        abort(403)
+    
+    form = PlanningForm(obj=planning)
+    
+    if form.validate_on_submit():
+        try:
+            # Traitement similaire à la création
+            details_dict = request.form.to_dict()
+            jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
+            periodes = ['matin', 'soir']
+
+            for jour in jours:
+                for periode in periodes:
+                    field_name = f"{jour}_{periode}"
+                    structures = getattr(form, field_name).data
+                    results = []
+                    for structure in structures:
+                        key = f"{field_name}_{structure.lower().replace(' ', '_')}"
+                        detail = details_dict.get(key, '').strip()
+                        results.append(f"{structure} - {detail}")
+                    setattr(planning, field_name, "\n".join(results))
+            
+            db.session.commit()
+            flash('Planning modifié avec succès', 'success')
+            return redirect(url_for('visualiser_planning'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Erreur lors de la modification: {str(e)}", 'error')
+    
+    return render_template('edit_planning.html', form=form, planning=planning)
+
+@app.route('/set_target', methods=['GET', 'POST'])
+@login_required
+def set_target():
+    form = SalesTargetForm()
+    if form.validate_on_submit():
+        existing = SalesTarget.query.filter_by(
+            commercial_id=current_user.id,
+            month=form.month.data,
+            year=form.year.data
+        ).first()
+        
+        if existing:
+            existing.target_amount = form.target_amount.data
+        else:
+            target = SalesTarget(
+                commercial_id=current_user.id,
+                month=form.month.data,
+                year=form.year.data,
+                target_amount=form.target_amount.data
+            )
+            db.session.add(target)
+        
+        db.session.commit()
+        flash('Objectif enregistré avec succès', 'success')
+        return redirect(url_for('my_stats'))
+    
+    return render_template('set_target.html', form=form)
+
+@app.route('/export/my_data')
+@login_required
+def export_my_data():
+    prospections = Prospection.query.filter_by(commercial_id=current_user.id).all()
+    
+    if current_user.project == 'nasmedic':
+        sales_eric = EricFavreSale.query.filter_by(commercial_id=current_user.id).all()
+        sales_trois = TroisCheneSale.query.filter_by(commercial_id=current_user.id).all()
+        sales_data = [
+            {
+                'Date': sale.date.strftime('%Y-%m-%d'),
+                'Type': 'Eric Favre',
+                'Produit': sale.product.name,
+                'Quantité': sale.quantity,
+                'Prix Unitaire': sale.price / sale.quantity,
+                'Total': sale.price
+            } for sale in sales_eric
+        ] + [
+            {
+                'Date': sale.date.strftime('%Y-%m-%d'),
+                'Type': '3 Chênes',
+                'Produit': sale.product.name,
+                'Quantité': sale.quantity,
+                'Prix Unitaire': sale.price / sale.quantity,
+                'Total': sale.price
+            } for sale in sales_trois
+        ]
+    else:
+        sales_nova = NovaPharmaSale.query.filter_by(commercial_id=current_user.id).all()
+        sales_gilbert = GilbertSale.query.filter_by(commercial_id=current_user.id).all()
+        sales_data = [
+            {
+                'Date': sale.date.strftime('%Y-%m-%d'),
+                'Type': 'Nova Pharma',
+                'Produit': sale.product.name,
+                'Quantité': sale.quantity,
+                'Prix Unitaire': sale.price / sale.quantity,
+                'Total': sale.price
+            } for sale in sales_nova
+        ] + [
+            {
+                'Date': sale.date.strftime('%Y-%m-%d'),
+                'Type': 'Gilbert',
+                'Produit': sale.product.name,
+                'Quantité': sale.quantity,
+                'Prix Unitaire': sale.price / sale.quantity,
+                'Total': sale.price
+            } for sale in sales_gilbert
+        ]
+    
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        pd.DataFrame([{
+            'Date': p.date.strftime('%Y-%m-%d'),
+            'Client': p.nom_client,
+            'Structure': p.structure,
+            'Spécialité': p.specialite,
+            'Téléphone': p.telephone,
+            'Produits présentés': p.produits_presentes,
+            'Produits prescrits': p.produits_prescrits
+        } for p in prospections]).to_excel(writer, sheet_name='Prospections', index=False)
+        
+        pd.DataFrame(sales_data).to_excel(writer, sheet_name='Ventes', index=False)
+        
+        stats = {
+            'Mois': datetime.now().strftime('%Y-%m'),
+            'Visites': len(prospections),
+            'Produits présentés': sum(1 for p in prospections if p.produits_presentes),
+            'Produits prescrits': sum(1 for p in prospections if p.produits_prescrits),
+            'CA total': sum(sale['Total'] for sale in sales_data)
+        }
+        pd.DataFrame([stats]).to_excel(writer, sheet_name='Statistiques', index=False)
+    
+    output.seek(0)
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=f'export_{current_user.username}_{datetime.now().date()}.xlsx'
+    )
+  
+@app.route('/notifications')
+@login_required
+def notifications():
+    unread = Notification.query.filter_by(user_id=current_user.id, is_read=False).order_by(Notification.created_at.desc()).all()
+    read = Notification.query.filter_by(user_id=current_user.id, is_read=True).order_by(Notification.created_at.desc()).limit(10).all()
+    return render_template('notifications.html', unread=unread, read=read)
+
+@app.route('/notifications/mark_as_read/<int:notification_id>')
+@login_required
+def mark_notification_as_read(notification_id):
+    notification = Notification.query.get_or_404(notification_id)
+    if notification.user_id != current_user.id:
+        abort(403)
+    
+    notification.is_read = True
+    db.session.commit()
+    return redirect(url_for('notifications'))
+    
+   
+@app.route('/my_stats')
+@login_required
+def my_stats():
+    today = date.today()
+    month_start = date(today.year, today.month, 1)
+    
+    # Récupérer les prospections
+    prospections = Prospection.query.filter(
+        Prospection.commercial_id == current_user.id,
+        Prospection.date >= month_start
+    ).all()
+    
+    # Calculer les stats de prospection
+    prospection_stats = {
+        'nb_visites': len(prospections),
+        'produits_presentes': sum(1 for p in prospections if p.produits_presentes),
+        'produits_prescrits': sum(1 for p in prospections if p.produits_prescrits)
+    }
+    
+    if prospection_stats['produits_presentes'] > 0:
+        prospection_stats['taux_conversion'] = (prospection_stats['produits_prescrits'] / prospection_stats['produits_presentes']) * 100
+    else:
+        prospection_stats['taux_conversion'] = 0
+    
+    # Calculer le CA
+    ca_stats = current_user.get_monthly_ca(today.year, today.month)
+    
+    return render_template('my_stats.html', 
+                         prospection_stats=prospection_stats,
+                         ca_stats=ca_stats)
+
 @app.route('/visualiser_planning')
 @login_required
 def visualiser_planning():
     plannings = Planning.query.filter_by(commercial_id=current_user.id).all()
     return render_template('visualiser_planning.html', plannings=plannings)
 
-@app.route('/voir_prospection/<int:prospection_id>')
-@login_required
-def voir_prospection(prospection_id):
-    prospection = Prospection.query.get_or_404(prospection_id)
-    return render_template('voir_prospection.html', prospection=prospection)
 
 @app.route("/admin/prospection/<int:prospection_id>")
 @login_required
 def voir_prospection_admin(prospection_id):
     if current_user.role != 'admin':
         abort(403)
+    
     prospection = Prospection.query.get_or_404(prospection_id)
-    return render_template("voir_prospection_admin.html", prospection=prospection)
+    commercial = User.query.get(prospection.commercial_id)
+    
+    return render_template(
+        "admin/voir_prospection_admin.html",
+        prospection=prospection,
+        commercial=commercial
+    )
 
 
 @app.route("/admin/prospections/<int:commercial_id>")

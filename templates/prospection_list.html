@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Mes Prospections</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Structure</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prospection in prospections %}
+            <tr>
+                <td>{{ prospection.date.strftime('%d/%m/%Y') }}</td>
+                <td>{{ prospection.nom_client }}</td>
+                <td>{{ prospection.structure }}</td>
+                <td>
+                    <a href="{{ url_for('voir_prospection', prospection_id=prospection.id) }}" class="btn btn-sm btn-info">
+                        <i class="fas fa-eye"></i> Voir
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

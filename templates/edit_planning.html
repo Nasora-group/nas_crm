@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Modifier le planning</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.date.label }} {{ form.date(class="form-control") }}
+        </div>
+        
+        {% for jour in ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'] %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>{{ jour|capitalize }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form[jour + '_matin'].label }}
+                                {{ form[jour + '_matin'](class="form-control") }}
+                            </div>
+                            <div class="form-group">
+                                <label>Détails</label>
+                                <textarea name="{{ jour }}_matin_details" class="form-control" rows="2">{{ planning[jour + '_matin'] }}</textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form[jour + '_soir'].label }}
+                                {{ form[jour + '_soir'](class="form-control") }}
+                            </div>
+                            <div class="form-group">
+                                <label>Détails</label>
+                                <textarea name="{{ jour }}_soir_details" class="form-control" rows="2">{{ planning[jour + '_soir'] }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <a href="{{ url_for('visualiser_planning') }}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}

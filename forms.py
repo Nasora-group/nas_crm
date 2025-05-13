@@ -21,6 +21,16 @@ class AdminSaleForm(FlaskForm):
     sale_date = DateField("Date de vente", validators=[DataRequired()], default=date.today)
     submit = SubmitField("Valider la vente")
 
+class SalesTargetForm(FlaskForm):
+    month = SelectField('Mois', choices=[
+        (1, 'Janvier'), (2, 'Février'), (3, 'Mars'), (4, 'Avril'),
+        (5, 'Mai'), (6, 'Juin'), (7, 'Juillet'), (8, 'Août'),
+        (9, 'Septembre'), (10, 'Octobre'), (11, 'Novembre'), (12, 'Décembre')
+    ], coerce=int, validators=[DataRequired()])
+    year = IntegerField('Année', validators=[DataRequired(), NumberRange(min=2020, max=2100)])
+    target_amount = FloatField('Objectif (€)', validators=[DataRequired(), NumberRange(min=0)])
+    submit = SubmitField('Enregistrer')
+
 class AdminGilbertSaleForm(FlaskForm):
     product_id = SelectField('Produit', coerce=int, validators=[DataRequired()])
     entrepot = SelectField('Entrepôt', choices=[

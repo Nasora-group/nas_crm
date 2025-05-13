@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Définir un objectif commercial</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.month.label }} {{ form.month(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.year.label }} {{ form.year(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.target_amount.label }} {{ form.target_amount(class="form-control") }}
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <a href="{{ url_for('my_stats') }}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}

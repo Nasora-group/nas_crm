@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Nouvelle Prospection{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>Nouvelle Prospection</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('add_prospection') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            {{ form.date.label(class="form-label") }}
+                            {{ form.date(class="form-control") }}
+                            {% if form.date.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.date.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.nom_client.label(class="form-label") }}
+                            {{ form.nom_client(class="form-control") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.specialite.label(class="form-label") }}
+                            {{ form.specialite(class="form-control") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.structure.label(class="form-label") }}
+                            {{ form.structure(class="form-control") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.telephone.label(class="form-label") }}
+                            {{ form.telephone(class="form-control") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.profils_prospect.label(class="form-label") }}
+                            {{ form.profils_prospect(class="form-control", rows=3) }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.produits_presentes.label(class="form-label") }}
+                            {{ form.produits_presentes(class="form-control", rows=3) }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.produits_prescrits.label(class="form-label") }}
+                            {{ form.produits_prescrits(class="form-control", rows=3) }}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

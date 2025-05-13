@@ -1,18 +1,22 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <h1>Détail de la Prospection</h1>
-    <table class="table">
-        <tr><th>Date :</th><td>{{ prospection.date.strftime('%d/%m/%Y') }}</td></tr>
-        <tr><th>Nom du client :</th><td>{{ prospection.nom_client }}</td></tr>
-        <tr><th>Structure :</th><td>{{ prospection.structure }}</td></tr>
-        <tr><th>Spécialité :</th><td>{{ prospection.specialite }}</td></tr>
-        <tr><th>Téléphone :</th><td>{{ prospection.telephone }}</td></tr>
-        <tr><th>Profils prospect :</th><td>{{ prospection.profils_prospect }}</td></tr>
-        <tr><th>Produits présentés :</th><td>{{ prospection.produits_presentes }}</td></tr>
-        <tr><th>Produits prescrits :</th><td>{{ prospection.produits_prescrits }}</td></tr>
-    </table>
-    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Retour au Tableau de Bord</a>
+<div class="container mt-4">
+    <h2>Détails de la prospection</h2>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{ prospection.nom_client }}</h5>
+            <p class="card-text">
+                <strong>Date:</strong> {{ prospection.date.strftime('%d/%m/%Y') }}<br>
+                <strong>Structure:</strong> {{ prospection.structure }}<br>
+                <strong>Spécialité:</strong> {{ prospection.specialite }}<br>
+                <strong>Produits présentés:</strong> {{ prospection.produits_presentes }}<br>
+                <strong>Produits prescrits:</strong> {{ prospection.produits_prescrits }}
+            </p>
+            <a href="{{ url_for('prospection_list') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+        </div>
+    </div>
 </div>
 {% endblock %}

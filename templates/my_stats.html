@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Mes Statistiques - {{ current_user.username }}</h2>
+    
+    <div class="row">
+        <!-- Carte Visites -->
+        <div class="col-md-3 mb-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Visites</h5>
+                    <h2 class="card-text">{{ prospection_stats.nb_visites }}</h2>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Carte Taux Conversion -->
+        <div class="col-md-3 mb-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Taux Conversion</h5>
+                    <h2 class="card-text">{{ "%.2f"|format(prospection_stats.taux_conversion) }}%</h2>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Carte CA Total -->
+        <div class="col-md-3 mb-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">CA Total</h5>
+                    <h2 class="card-text">{{ "%.2f"|format(ca_stats.total) }} €</h2>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Carte Produits Prescrits -->
+        <div class="col-md-3 mb-4">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Produits Prescrits</h5>
+                    <h2 class="card-text">{{ prospection_stats.produits_prescrits }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Détails par marque -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Détail du Chiffre d'Affaires</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Marque</th>
+                                <th>Montant</th>
+                                <th>% du Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if current_user.project == 'nasmedic' %}
+                            <tr>
+                                <td>Eric Favre</td>
+                                <td>{{ "%.2f"|format(ca_stats.eric_favre) }} €</td>
+                                <td>{{ "%.1f"|format(ca_stats.eric_favre / ca_stats.total * 100 if ca_stats.total > 0 else 0) }}%</td>
+                            </tr>
+                            <tr>
+                                <td>3 Chênes</td>
+                                <td>{{ "%.2f"|format(ca_stats.trois_chene) }} €</td>
+                                <td>{{ "%.1f"|format(ca_stats.trois_chene / ca_stats.total * 100 if ca_stats.total > 0 else 0) }}%</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td>Nova Pharma</td>
+                                <td>{{ "%.2f"|format(ca_stats.nova_pharma) }} €</td>
+                                <td>{{ "%.1f"|format(ca_stats.nova_pharma / ca_stats.total * 100 if ca_stats.total > 0 else 0) }}%</td>
+                            </tr>
+                            <tr>
+                                <td>Gilbert</td>
+                                <td>{{ "%.2f"|format(ca_stats.gilbert) }} €</td>
+                                <td>{{ "%.1f"|format(ca_stats.gilbert / ca_stats.total * 100 if ca_stats.total > 0 else 0) }}%</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
