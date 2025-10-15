@@ -6,8 +6,8 @@
 <div class="sub-nav">
     <a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Tableau de Bord</a>
     <a href="{{ url_for('monthly_revenue_nasderm') }}" class="active"><i class="fas fa-chart-line"></i> Chiffre d'Affaire</a>
-    <a href="{{ url_for('monthly_revenue_nasderm') }}"><i class="fas fa-shopping-cart"></i> Ventes Nova Pharma</a>
-    <a href="{{ url_for('monthly_revenue_nasderm') }}"><i class="fas fa-shopping-cart"></i> Ventes Gilbert</a>
+    <a href="{{ url_for('monthly_revenue_nasderm') }}"><i class="fas fa-shopping-cart"></i> Ventes HRA</a>
+    <a href="{{ url_for('monthly_revenue_nasderm') }}"><i class="fas fa-shopping-cart"></i> Ventes ramopharma</a>
 </div>
 
 <h1>Chiffre d'Affaire Mensuel (NASDERM)</h1>
@@ -23,18 +23,18 @@
         <thead>
             <tr>
                 <th>Mois</th>
-                <th>Nova Pharma (€)</th>
-                <th>Gilbert (€)</th>
+                <th>HRA (€)</th>
+                <th>ramopharma (€)</th>
                 <th>Total (€)</th>
                 <th>Détails</th>
             </tr>
         </thead>
         <tbody>
-            {% for month, nova, gilbert in monthly_revenue %}
+            {% for month, nova, ramopharma in monthly_revenue %}
             <tr>
                 <td>{{ month }}</td>
                 <td>{{ "%.2f"|format(nova or 0) }}</td>
-                <td>{{ "%.2f"|format(gilbert or 0) }}</td>
+                <td>{{ "%.2f"|format(ramopharma or 0) }}</td>
                 <td>{{ "%.2f"|format(total or 0) }}</td>
                 <td>
                     <a href="{{ url_for('monthly_revenue_detail_nasderm', month=month) }}" class="btn btn-sm btn-info">
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('revenueChart').getContext('2d');
     const months = [{% for month in monthly_revenue %}'{{ month[0] }}',{% endfor %}];
     const novaData = [{% for month in monthly_revenue %}{{ month[1] }},{% endfor %}];
-    const gilbertData = [{% for month in monthly_revenue %}{{ month[2] }},{% endfor %}];
+    const ramopharmaData = [{% for month in monthly_revenue %}{{ month[2] }},{% endfor %}];
     const totalData = [{% for month in monthly_revenue %}{{ month[3] }},{% endfor %}];
 
     new Chart(ctx, {
@@ -61,15 +61,15 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: months,
             datasets: [
                 {
-                    label: 'Nova Pharma',
+                    label: 'HRA',
                     data: novaData,
                     backgroundColor: 'rgba(52, 152, 219, 0.7)',
                     borderColor: 'rgba(52, 152, 219, 1)',
                     borderWidth: 1
                 },
                 {
-                    label: 'Gilbert',
-                    data: gilbertData,
+                    label: 'ramopharma',
+                    data: ramopharmaData,
                     backgroundColor: 'rgba(155, 89, 182, 0.7)',
                     borderColor: 'rgba(155, 89, 182, 1)',
                     borderWidth: 1
