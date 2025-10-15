@@ -21,19 +21,19 @@ class User(UserMixin, db.Model):
         """Retourne le CA mensuel pour ce commercial"""
         if self.project == 'nasmedic':
             eric_ca = db.session.query(
-                func.sum(EricFavreSale.quantity * EricFavreSale.price)
+                func.sum(farmalfaSale.quantity * farmalfaSale.price)
             ).filter(
-                EricFavreSale.commercial_id == self.id,
-                extract('year', EricFavreSale.date) == year,
-                extract('month', EricFavreSale.date) == month
+                farmalfaSale.commercial_id == self.id,
+                extract('year', farmalfaSale.date) == year,
+                extract('month', farmalfaSale.date) == month
             ).scalar() or 0
             
             trois_chene_ca = db.session.query(
-                func.sum(TroisCheneSale.quantity * TroisCheneSale.price)
+                func.sum(opalaSale.quantity * opalaSale.price)
             ).filter(
-                TroisCheneSale.commercial_id == self.id,
-                extract('year', TroisCheneSale.date) == year,
-                extract('month', TroisCheneSale.date) == month
+                opalaSale.commercial_id == self.id,
+                extract('year', opalaSale.date) == year,
+                extract('month', opalaSale.date) == month
             ).scalar() or 0
             
             return {
@@ -43,25 +43,25 @@ class User(UserMixin, db.Model):
             }
         else:
             nova_ca = db.session.query(
-                func.sum(NovaPharmaSale.quantity * NovaPharmaSale.price)
+                func.sum(HRASale.quantity * HRASale.price)
             ).filter(
-                NovaPharmaSale.commercial_id == self.id,
-                extract('year', NovaPharmaSale.date) == year,
-                extract('month', NovaPharmaSale.date) == month
+                HRASale.commercial_id == self.id,
+                extract('year', HRASale.date) == year,
+                extract('month', HRASale.date) == month
             ).scalar() or 0
             
-            gilbert_ca = db.session.query(
-                func.sum(GilbertSale.quantity * GilbertSale.price)
+            Ramopharma_ca = db.session.query(
+                func.sum(RamopharmaSale.quantity * RamopharmaSale.price)
             ).filter(
-                GilbertSale.commercial_id == self.id,
-                extract('year', GilbertSale.date) == year,
-                extract('month', GilbertSale.date) == month
+                RamopharmaSale.commercial_id == self.id,
+                extract('year', RamopharmaSale.date) == year,
+                extract('month', RamopharmaSale.date) == month
             ).scalar() or 0
             
             return {
                 'nova_pharma': float(nova_ca),
-                'gilbert': float(gilbert_ca),
-                'total': float(nova_ca + gilbert_ca)
+                'Ramopharma': float(Ramopharma_ca),
+                'total': float(nova_ca + Ramopharma_ca)
             }
 
 class Prospection(db.Model):
@@ -162,7 +162,7 @@ class Planning(db.Model):
     dimanche_soir = db.Column(db.PickleType)
     dimanche_soir_details = db.Column(db.Text)
 
-class NovaPharmaProduct(db.Model):
+class HRAProduct(db.Model):
     __tablename__ = 'nova_pharma_product'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -173,10 +173,10 @@ class NovaPharmaProduct(db.Model):
     stock_sodipharm = db.Column(db.Integer, default=0, nullable=False)
 
     def __repr__(self):
-        return f'<NovaPharmaProduct {self.name}>'
+        return f'<HRAProduct {self.name}>'
 
-class GilbertProduct(db.Model):
-    __tablename__ = 'gilbert_product'
+class RamopharmaProduct(db.Model):
+    __tablename__ = 'Ramopharma_product'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     default_price = db.Column(Numeric(10, 2), nullable=False)  # Modifié ici
@@ -186,9 +186,9 @@ class GilbertProduct(db.Model):
     stock_sodipharm = db.Column(db.Integer, default=0, nullable=False)
 
     def __repr__(self):
-        return f'<GilbertProduct {self.name}>'
+        return f'<RamopharmaProduct {self.name}>'
 
-class EricFavreProduct(db.Model):
+class farmalfaProduct(db.Model):
     __tablename__ = 'eric_favre_product'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -199,9 +199,9 @@ class EricFavreProduct(db.Model):
     stock_sodipharm = db.Column(db.Integer, default=0, nullable=False)
 
     def __repr__(self):
-        return f'<EricFavreProduct {self.name}>'
+        return f'<farmalfaProduct {self.name}>'
 
-class TroisCheneProduct(db.Model):
+class opalaProduct(db.Model):
     __tablename__ = 'trois_chene_product'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -212,9 +212,9 @@ class TroisCheneProduct(db.Model):
     stock_sodipharm = db.Column(db.Integer, default=0, nullable=False)
 
     def __repr__(self):
-        return f'<TroisCheneProduct {self.name}>'
+        return f'<opalaProduct {self.name}>'
 
-class NovaPharmaSale(db.Model):
+class HRASale(db.Model):
     __tablename__ = 'nova_pharma_sale'
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('nova_pharma_product.id'), nullable=False)
@@ -224,37 +224,37 @@ class NovaPharmaSale(db.Model):
     commercial_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     project = db.Column(db.String(50), nullable=False, default='nasderm')
 
-    product = db.relationship('NovaPharmaProduct', backref='sales')
+    product = db.relationship('HRAProduct', backref='sales')
     commercial = db.relationship('User', backref='nova_pharma_sales')
 
     def __repr__(self):
-        return f'<NovaPharmaSale {self.date} - {self.quantity}x>'
+        return f'<HRASale {self.date} - {self.quantity}x>'
     
     @property
     def total(self):
         return float(self.quantity * self.price)
 
-class GilbertSale(db.Model):
-    __tablename__ = 'gilbert_sale'
+class RamopharmaSale(db.Model):
+    __tablename__ = 'Ramopharma_sale'
     id = db.Column(db.Integer, primary_key=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('gilbert_product.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('Ramopharma_product.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     price = db.Column(Numeric(10, 2), nullable=False)  # Modifié ici
     date = db.Column(db.Date, nullable=False)
     commercial_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     project = db.Column(db.String(50), nullable=False, default='nasderm')
 
-    product = db.relationship('GilbertProduct', backref='sales')
-    commercial = db.relationship('User', backref='gilbert_sales')
+    product = db.relationship('RamopharmaProduct', backref='sales')
+    commercial = db.relationship('User', backref='Ramopharma_sales')
 
     def __repr__(self):
-        return f'<GilbertSale {self.date} - {self.quantity}x>'
+        return f'<RamopharmaSale {self.date} - {self.quantity}x>'
     
     @property
     def total(self):
         return float(self.quantity * self.price)
 
-class EricFavreSale(db.Model):
+class farmalfaSale(db.Model):
     __tablename__ = 'eric_favre_sale'
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('eric_favre_product.id'), nullable=False)
@@ -264,17 +264,17 @@ class EricFavreSale(db.Model):
     commercial_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     project = db.Column(db.String(50), nullable=False, default='nasmedic')
 
-    product = db.relationship('EricFavreProduct', backref='sales')
+    product = db.relationship('farmalfaProduct', backref='sales')
     commercial = db.relationship('User', backref='eric_favre_sales')
 
     def __repr__(self):
-        return f'<EricFavreSale {self.date} - {self.quantity}x>'
+        return f'<farmalfaSale {self.date} - {self.quantity}x>'
     
     @property
     def total(self):
         return float(self.quantity * self.price)
 
-class TroisCheneSale(db.Model):
+class opalaSale(db.Model):
     __tablename__ = 'trois_chene_sale'
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('trois_chene_product.id'), nullable=False)
@@ -284,11 +284,11 @@ class TroisCheneSale(db.Model):
     commercial_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     project = db.Column(db.String(50), nullable=False, default='nasmedic')
 
-    product = db.relationship('TroisCheneProduct', backref='sales')
+    product = db.relationship('opalaProduct', backref='sales')
     commercial = db.relationship('User', backref='trois_chene_sales')
 
     def __repr__(self):
-        return f'<TroisCheneSale {self.date} - {self.quantity}x>'
+        return f'<opalaSale {self.date} - {self.quantity}x>'
     
     @property
     def total(self):
