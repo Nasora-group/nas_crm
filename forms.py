@@ -31,7 +31,7 @@ class SalesTargetForm(FlaskForm):
     target_amount = FloatField('Objectif (€)', validators=[DataRequired(), NumberRange(min=0)])
     submit = SubmitField('Enregistrer')
 
-class AdminGilbertSaleForm(FlaskForm):
+class AdminRamopharmaSaleForm(FlaskForm):
     product_id = SelectField('Produit', coerce=int, validators=[DataRequired()])
     entrepot = SelectField('Entrepôt', choices=[
         ('DUOPHARM', 'DUOPHARM'),
@@ -55,7 +55,7 @@ class AdminfarmalfaSaleForm(FlaskForm):
     sale_date = DateField("Date de vente", validators=[DataRequired()], default=date.today)
     submit = SubmitField('Enregistrer')
 
-class AdminTroisCheneSaleForm(FlaskForm):
+class AdminOpalaSaleForm(FlaskForm):
     product_id = SelectField('Produit', coerce=int, validators=[DataRequired()])
     entrepot = SelectField('Entrepôt', choices=[
         ('DUOPHARM', 'DUOPHARM'),
@@ -151,16 +151,16 @@ class ProductSaleForm(FlaskForm):
     sale_date = DateField('Date de saisie', validators=[DataRequired()], default=date.today)
     submit = SubmitField('Enregistrer les ventes')
 
-class NovaPharmaSalesForm(ProductSaleForm):
+class HRASalesForm(ProductSaleForm):
     pass
 
-class GilbertSalesForm(ProductSaleForm):
+class RamopharmaSalesForm(ProductSaleForm):
     pass
 
 class farmalfaSalesForm(ProductSaleForm):
     pass
 
-class TroisCheneSalesForm(ProductSaleForm):
+class OpalaSalesForm(ProductSaleForm):
     pass
 
 class DownloadExcelForm(FlaskForm):
@@ -175,12 +175,12 @@ class UserForm(FlaskForm):
     project = SelectField('Projet', choices=[('nasderm', 'NASDERM'), ('nasmedic', 'NASMEDIC')], validators=[DataRequired()])
     submit = SubmitField('Enregistrer')
     
-class AddNovaPharmaProductForm(FlaskForm):
+class AddHRAProductForm(FlaskForm):
     name = StringField("Nom du produit", validators=[DataRequired()])
     price = FloatField("Prix par défaut (€)", validators=[DataRequired()])
     submit = SubmitField("Ajouter")
 
-class AddGilbertProductForm(FlaskForm):
+class AddRamopharmaProductForm(FlaskForm):
     name = StringField("Nom du produit", validators=[DataRequired()])
     price = FloatField("Prix par défaut (€)", validators=[DataRequired()])
     submit = SubmitField("Ajouter")
@@ -190,7 +190,7 @@ class AddfarmalfaProductForm(FlaskForm):
     price = FloatField("Prix par défaut (€)", validators=[DataRequired()])
     submit = SubmitField("Ajouter")
 
-class AddTroisCheneProductForm(FlaskForm):
+class AddOpalaProductForm(FlaskForm):
     name = StringField("Nom du produit", validators=[DataRequired()])
     price = FloatField("Prix par défaut (€)", validators=[DataRequired()])
     submit = SubmitField("Ajouter")
