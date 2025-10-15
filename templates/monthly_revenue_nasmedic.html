@@ -6,7 +6,7 @@
 <div class="sub-nav">
     <a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Tableau de Bord</a>
     <a href="{{ url_for('monthly_revenue_nasmedic') }}" class="active"><i class="fas fa-chart-line"></i> Chiffre d'Affaire</a>
-    <a href="{{ url_for('monthly_revenue_nasmedic') }}"><i class="fas fa-shopping-cart"></i> Ventes Eric Favre</a>
+    <a href="{{ url_for('monthly_revenue_nasmedic') }}"><i class="fas fa-shopping-cart"></i> Ventes farmalfa</a>
     <a href="{{ url_for('monthly_revenue_nasmedic') }}"><i class="fas fa-shopping-cart"></i> Ventes 3 Chênes</a>
 </div>
 
@@ -23,7 +23,7 @@
         <thead>
             <tr>
                 <th>Mois</th>
-                <th>Eric Favre (€)</th>
+                <th>farmalfa (€)</th>
                 <th>3 Chênes Pharma (€)</th>
                 <th>Total (€)</th>
                 <th>Détails</th>
@@ -33,8 +33,8 @@
             {% for row in monthly_revenue %}
             <tr>
                 <td>{{ row.month }}</td>
-                <td>{{ row.eric_favre }}</td>
-                <td>{{ row.trois_chene }}</td>
+                <td>{{ row.farmalfa }}</td>
+                <td>{{ row.opala }}</td>
                 <td>{{ row.total }}</td>
                 <td>
                     <a href="{{ url_for('monthly_revenue_detail_nasmedic', month=row.month) }}" class="btn btn-sm btn-info">
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: months,
             datasets: [
                 {
-                    label: 'Eric Favre',
+                    label: 'farmalfa',
                     data: ericfavreData,
                     backgroundColor: 'rgba(74, 111, 165, 0.7)',
                     borderColor: 'rgba(74, 111, 165, 1)',
