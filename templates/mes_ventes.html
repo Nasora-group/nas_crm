@@ -3,37 +3,37 @@
 {% block content %}
 <h2>Mes ventes enregistrées</h2>
 
-{% if ventes_eric %}
-    <h3>Eric Favre</h3>
+{% if ventes_farmalfa %}
+    <h3>farmalfa</h3>
     <ul>
-        {% for v in ventes_eric %}
+        {% for v in ventes_farmalfa %}
             <li>{{ v.product.name }} - {{ v.quantity }} unités - {{ v.date.strftime('%d/%m/%Y') }}</li>
         {% endfor %}
     </ul>
 {% endif %}
 
-{% if ventes_trois %}
+{% if ventes_farmalfa %}
     <h3>3 Chênes Pharma</h3>
     <ul>
-        {% for v in ventes_trois %}
+        {% for v in ventes_farmalfa %}
             <li>{{ v.product.name }} - {{ v.quantity }} unités - {{ v.date.strftime('%d/%m/%Y') }}</li>
         {% endfor %}
     </ul>
 {% endif %}
 
-{% if ventes_nova %}
-    <h3>Nova Pharma</h3>
+{% if ventes_HRA %}
+    <h3>HRA</h3>
     <ul>
-        {% for v in ventes_nova %}
+        {% for v in ventes_HRA %}
             <li>{{ v.product.name }} - {{ v.quantity }} unités - {{ v.date.strftime('%d/%m/%Y') }}</li>
         {% endfor %}
     </ul>
 {% endif %}
 
-{% if ventes_gilbert %}
-    <h3>Gilbert</h3>
+{% if ventes_ramopharma %}
+    <h3>ramopharma</h3>
     <ul>
-        {% for v in ventes_gilbert %}
+        {% for v in ventes_ramopharma %}
             <li>{{ v.product.name }} - {{ v.quantity }} unités - {{ v.date.strftime('%d/%m/%Y') }}</li>
         {% endfor %}
     </ul>
