@@ -43,7 +43,7 @@ class AdminGilbertSaleForm(FlaskForm):
     sale_date = DateField("Date de vente", validators=[DataRequired()], default=date.today)
     submit = SubmitField('Enregistrer')
 
-class AdminEricFavreSaleForm(FlaskForm):
+class AdminfarmalfaSaleForm(FlaskForm):
     product_id = SelectField('Produit', coerce=int, validators=[DataRequired()])
     entrepot = SelectField('Entrepôt', choices=[
         ('DUOPHARM', 'DUOPHARM'),
@@ -157,7 +157,7 @@ class NovaPharmaSalesForm(ProductSaleForm):
 class GilbertSalesForm(ProductSaleForm):
     pass
 
-class EricFavreSalesForm(ProductSaleForm):
+class farmalfaSalesForm(ProductSaleForm):
     pass
 
 class TroisCheneSalesForm(ProductSaleForm):
@@ -185,7 +185,7 @@ class AddGilbertProductForm(FlaskForm):
     price = FloatField("Prix par défaut (€)", validators=[DataRequired()])
     submit = SubmitField("Ajouter")
 
-class AddEricFavreProductForm(FlaskForm):
+class AddfarmalfaProductForm(FlaskForm):
     name = StringField("Nom du produit", validators=[DataRequired()])
     price = FloatField("Prix par défaut (€)", validators=[DataRequired()])
     submit = SubmitField("Ajouter")
