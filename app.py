@@ -7,7 +7,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'  # Exemple avec 
 db.init_app(app)  # On relie db à l'application Flask
 
 # On importe les modèles APRÈS avoir créé app et db
-from models import User, Prospection, NovaPharmaProduct, GilbertProduct, EricFavreProduct, TroisCheneProduct, NovaPharmaSale, GilbertSale, EricFavreSale, TroisCheneSale, Planning
+from models import User, Prospection, HRAProduct, ramopharmaProduct, farmalfaProduct, opalaProduct, HRASale, ramopharmaSale, farmalfaSale, opalaSale, Planning
 
 # Le reste de ton code (routes, etc.)
 from flask import Flask, render_template, request, redirect, abort, url_for, flash, send_file
@@ -18,7 +18,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date
 import pandas as pd
 from io import BytesIO
-from forms import ProspectionForm, LoginForm, DownloadExcelForm, NovaPharmaSalesForm, GilbertSalesForm, EricFavreSalesForm, TroisCheneSalesForm, PlanningForm, UserForm, AdminEricFavreSaleForm, AdminGilbertSaleForm, AdminTroisCheneSaleForm, AddEricFavreProductForm, AddGilbertProductForm, AddTroisCheneProductForm, AdminSaleForm, AddNovaPharmaProductForm
+from forms import ProspectionForm, LoginForm, DownloadExcelForm, HRASalesForm, ramopharmaSalesForm, farmalfaSalesForm, opalaSalesForm, PlanningForm, UserForm, AdminfarmalfaSaleForm, AdminramopharmaSaleForm, AdminopalaSaleForm, AddfarmalfaProductForm, AddramopharmaProductForm, AddopalaProductForm, AdminSaleForm, AddHRAProductForm
 from flask_wtf.csrf import CSRFProtect
 from flask_caching import Cache
 from reportlab.lib.pagesizes import letter
@@ -27,7 +27,7 @@ from sqlalchemy import func, and_
 import logging
 from sqlalchemy.orm import aliased
 from sqlalchemy import or_
-from models import db, User, Prospection, NovaPharmaProduct, GilbertProduct, EricFavreProduct, TroisCheneProduct, NovaPharmaSale, GilbertSale, EricFavreSale, TroisCheneSale, Planning
+from models import db, User, Prospection, HRAProduct, ramopharmaProduct, farmalfaProduct, opalaProduct, HRASale, ramopharmaSale, farmalfaSale, opalaSale, Planning
 from sqlalchemy import extract
 
 app = Flask(__name__)
@@ -149,54 +149,54 @@ def ca_mensuel_commercial(commercial_id):
         abort(403)
     
     # Calcul pour NASMEDIC
-    eric_ca = db.session.query(
-        func.strftime('%Y-%m', EricFavreSale.date).label('mois'),
-        func.sum(EricFavreSale.quantity * EricFavreSale.price).label('ca')
+    farmalfa_ca = db.session.query(
+        func.strftime('%Y-%m', farmalfaSale.date).label('mois'),
+        func.sum(farmalfaSale.quantity * farmalfaSale.price).label('ca')
     ).filter(
-        EricFavreSale.commercial_id == commercial_id
+        farmalfaSale.commercial_id == commercial_id
     ).group_by('mois').all()
 
     trois_chene_ca = db.session.query(
-        func.strftime('%Y-%m', TroisCheneSale.date).label('mois'),
-        func.sum(TroisCheneSale.quantity * TroisCheneSale.price).label('ca')
+        func.strftime('%Y-%m', opalaSale.date).label('mois'),
+        func.sum(opalaSale.quantity * opalaSale.price).label('ca')
     ).filter(
-        TroisCheneSale.commercial_id == commercial_id
+        opalaSale.commercial_id == commercial_id
     ).group_by('mois').all()
 
     # Calcul pour NASDERM
     nova_ca = db.session.query(
-        func.strftime('%Y-%m', NovaPharmaSale.date).label('mois'),
-        func.sum(NovaPharmaSale.quantity * NovaPharmaSale.price).label('ca')
+        func.strftime('%Y-%m', HRASale.date).label('mois'),
+        func.sum(HRASale.quantity * HRASale.price).label('ca')
     ).filter(
-        NovaPharmaSale.commercial_id == commercial_id
+        HRASale.commercial_id == commercial_id
     ).group_by('mois').all()
 
-    gilbert_ca = db.session.query(
-        func.strftime('%Y-%m', GilbertSale.date).label('mois'),
-        func.sum(GilbertSale.quantity * GilbertSale.price).label('ca')
+    ramopharma_ca = db.session.query(
+        func.strftime('%Y-%m', ramopharmaSale.date).label('mois'),
+        func.sum(ramopharmaSale.quantity * ramopharmaSale.price).label('ca')
     ).filter(
-        GilbertSale.commercial_id == commercial_id
+        ramopharmaSale.commercial_id == commercial_id
     ).group_by('mois').all()
 
     # Fusion des résultats
     results = {}
-    for ca in [eric_ca, trois_chene_ca, nova_ca, gilbert_ca]:
+    for ca in [farmalfa_ca, trois_chene_ca, nova_ca, ramopharma_ca]:
         for row in ca:
             if row.mois not in results:
-                results[row.mois] = {'eric_favre': 0, 'trois_chene': 0, 'nova_pharma': 0, 'gilbert': 0, 'total': 0}
-            if ca == eric_ca:
-                results[row.mois]['eric_favre'] = float(row.ca or 0)
+                results[row.mois] = {'farmalfa_favre': 0, 'trois_chene': 0, 'nova_pharma': 0, 'ramopharma': 0, 'total': 0}
+            if ca == farmalfa_ca:
+                results[row.mois]['farmalfa_favre'] = float(row.ca or 0)
             elif ca == trois_chene_ca:
                 results[row.mois]['trois_chene'] = float(row.ca or 0)
             elif ca == nova_ca:
                 results[row.mois]['nova_pharma'] = float(row.ca or 0)
-            elif ca == gilbert_ca:
-                results[row.mois]['gilbert'] = float(row.ca or 0)
+            elif ca == ramopharma_ca:
+                results[row.mois]['ramopharma'] = float(row.ca or 0)
             results[row.mois]['total'] = sum([
-                results[row.mois]['eric_favre'],
+                results[row.mois]['farmalfa_favre'],
                 results[row.mois]['trois_chene'],
                 results[row.mois]['nova_pharma'],
-                results[row.mois]['gilbert']
+                results[row.mois]['ramopharma']
             ])
 
     return jsonify(results)
@@ -271,15 +271,15 @@ def edit_prospection(prospection_id):
 def ventes():
     """Route générale pour les ventes - Redirige vers la page appropriée selon le projet"""
     if current_user.project == 'nasmedic':
-        # Pour NASMEDIC: Eric Favre et 3 Chênes
+        # Pour NASMEDIC: farmalfa et 3 Chênes
         return render_template('ventes_nasmedic.html', 
-                            ventes_eric=EricFavreSale.query.filter_by(commercial_id=current_user.id).all(),
-                            ventes_trois=TroisCheneSale.query.filter_by(commercial_id=current_user.id).all())
+                            ventes_farmalfa=farmalfaSale.query.filter_by(commercial_id=current_user.id).all(),
+                            ventes_trois=opalaSale.query.filter_by(commercial_id=current_user.id).all())
     else:
-        # Pour NASDERM: Nova Pharma et Gilbert
+        # Pour NASDERM: HRA et ramopharma
         return render_template('ventes_nasderm.html',
-                            ventes_nova=NovaPharmaSale.query.filter_by(commercial_id=current_user.id).all(),
-                            ventes_gilbert=GilbertSale.query.filter_by(commercial_id=current_user.id).all())
+                            ventes_nova=HRASale.query.filter_by(commercial_id=current_user.id).all(),
+                            ventes_ramopharma=ramopharmaSale.query.filter_by(commercial_id=current_user.id).all())
 
 @app.route('/delete_prospection/<int:prospection_id>')
 @login_required
@@ -370,17 +370,17 @@ def export_my_data():
     prospections = Prospection.query.filter_by(commercial_id=current_user.id).all()
     
     if current_user.project == 'nasmedic':
-        sales_eric = EricFavreSale.query.filter_by(commercial_id=current_user.id).all()
-        sales_trois = TroisCheneSale.query.filter_by(commercial_id=current_user.id).all()
+        sales_farmalfa = farmalfaSale.query.filter_by(commercial_id=current_user.id).all()
+        sales_trois = opalaSale.query.filter_by(commercial_id=current_user.id).all()
         sales_data = [
             {
                 'Date': sale.date.strftime('%Y-%m-%d'),
-                'Type': 'Eric Favre',
+                'Type': 'farmalfa',
                 'Produit': sale.product.name,
                 'Quantité': sale.quantity,
                 'Prix Unitaire': sale.price / sale.quantity,
                 'Total': sale.price
-            } for sale in sales_eric
+            } for sale in sales_farmalfa
         ] + [
             {
                 'Date': sale.date.strftime('%Y-%m-%d'),
@@ -392,12 +392,12 @@ def export_my_data():
             } for sale in sales_trois
         ]
     else:
-        sales_nova = NovaPharmaSale.query.filter_by(commercial_id=current_user.id).all()
-        sales_gilbert = GilbertSale.query.filter_by(commercial_id=current_user.id).all()
+        sales_nova = HRASale.query.filter_by(commercial_id=current_user.id).all()
+        sales_ramopharma = ramopharmaSale.query.filter_by(commercial_id=current_user.id).all()
         sales_data = [
             {
                 'Date': sale.date.strftime('%Y-%m-%d'),
-                'Type': 'Nova Pharma',
+                'Type': 'HRA',
                 'Produit': sale.product.name,
                 'Quantité': sale.quantity,
                 'Prix Unitaire': sale.price / sale.quantity,
@@ -406,12 +406,12 @@ def export_my_data():
         ] + [
             {
                 'Date': sale.date.strftime('%Y-%m-%d'),
-                'Type': 'Gilbert',
+                'Type': 'ramopharma',
                 'Produit': sale.product.name,
                 'Quantité': sale.quantity,
                 'Prix Unitaire': sale.price / sale.quantity,
                 'Total': sale.price
-            } for sale in sales_gilbert
+            } for sale in sales_ramopharma
         ]
     
     output = BytesIO()
@@ -727,14 +727,14 @@ def export_prospections_commercial(commercial_id):
 @login_required
 def mes_ventes():
     if current_user.project == 'nasmedic':
-        ventes_eric = EricFavreSale.query.filter_by(commercial_id=current_user.id).all()
-        ventes_trois = TroisCheneSale.query.filter_by(commercial_id=current_user.id).all()
-        return render_template('mes_ventes.html', ventes_eric=ventes_eric, ventes_trois=ventes_trois)
+        ventes_farmalfa = farmalfaSale.query.filter_by(commercial_id=current_user.id).all()
+        ventes_trois = opalaSale.query.filter_by(commercial_id=current_user.id).all()
+        return render_template('mes_ventes.html', ventes_farmalfa=ventes_farmalfa, ventes_trois=ventes_trois)
 
     elif current_user.project == 'nasderm':
-        ventes_nova = NovaPharmaSale.query.filter_by(commercial_id=current_user.id).all()
-        ventes_gilbert = GilbertSale.query.filter_by(commercial_id=current_user.id).all()
-        return render_template('mes_ventes.html', ventes_nova=ventes_nova, ventes_gilbert=ventes_gilbert)
+        ventes_nova = HRASale.query.filter_by(commercial_id=current_user.id).all()
+        ventes_ramopharma = ramopharmaSale.query.filter_by(commercial_id=current_user.id).all()
+        return render_template('mes_ventes.html', ventes_nova=ventes_nova, ventes_ramopharma=ventes_ramopharma)
 
     else:
         flash("Projet inconnu", "error")
@@ -791,11 +791,11 @@ def nasmedic_dashboard():
     
     # Calcul des KPI
     total_revenue = db.session.query(
-        func.sum(EricFavreSale.quantity * EricFavreSale.price) + func.sum(TroisCheneSale.quantity * TroisCheneSale.price)
+        func.sum(farmalfaSale.quantity * farmalfaSale.price) + func.sum(opalaSale.quantity * opalaSale.price)
     ).filter(
         or_(
-            EricFavreSale.project == 'nasmedic',
-            TroisCheneSale.project == 'nasmedic'
+            farmalfaSale.project == 'nasmedic',
+            opalaSale.project == 'nasmedic'
         )
     ).scalar() or 0
     
@@ -803,18 +803,18 @@ def nasmedic_dashboard():
     
     # Récupérer le chiffre d'affaire mensuel pour NASMEDIC
     monthly_revenue = db.session.query(
-        func.strftime('%Y-%m', EricFavreSale.date).label('month'),
-        func.sum(EricFavreSale.quantity * EricFavreSale.price).label('eric_favre_revenue'),
-        func.sum(TroisCheneSale.quantity * TroisCheneSale.price).label('trois_chene_revenue')
-    ).outerjoin(TroisCheneSale, func.strftime('%Y-%m', TroisCheneSale.date) == func.strftime('%Y-%m', EricFavreSale.date)) \
-     .filter(or_(EricFavreSale.project == 'nasmedic', TroisCheneSale.project == 'nasmedic')) \
+        func.strftime('%Y-%m', farmalfaSale.date).label('month'),
+        func.sum(farmalfaSale.quantity * farmalfaSale.price).label('farmalfa_favre_revenue'),
+        func.sum(opalaSale.quantity * opalaSale.price).label('trois_chene_revenue')
+    ).outerjoin(opalaSale, func.strftime('%Y-%m', opalaSale.date) == func.strftime('%Y-%m', farmalfaSale.date)) \
+     .filter(or_(farmalfaSale.project == 'nasmedic', opalaSale.project == 'nasmedic')) \
      .group_by('month').order_by('month').all()
     
     # Préparer les données pour le graphique
     monthly_revenue_labels = [row.month for row in monthly_revenue]
-    monthly_revenue_eric = [row.eric_favre_revenue or 0 for row in monthly_revenue]
+    monthly_revenue_farmalfa = [row.farmalfa_favre_revenue or 0 for row in monthly_revenue]
     monthly_revenue_trois = [row.trois_chene_revenue or 0 for row in monthly_revenue]
-    monthly_revenue_total = [sum(x) for x in zip(monthly_revenue_eric, monthly_revenue_trois)]
+    monthly_revenue_total = [sum(x) for x in zip(monthly_revenue_farmalfa, monthly_revenue_trois)]
     
     # Récupérer le classement des commerciaux (Top 5)
     top_5_commerciaux = db.session.query(
@@ -829,7 +829,7 @@ def nasmedic_dashboard():
     return render_template(
         'nasmedic_dashboard.html',
         monthly_revenue_labels=monthly_revenue_labels,
-        monthly_revenue_eric=monthly_revenue_eric,
+        monthly_revenue_farmalfa=monthly_revenue_farmalfa,
         monthly_revenue_trois=monthly_revenue_trois,
         monthly_revenue_total=monthly_revenue_total,
         top_5_commerciaux=top_5_commerciaux,
@@ -869,11 +869,11 @@ def nasderm_dashboard():
     
     # Calcul des KPI
     total_revenue = db.session.query(
-        func.sum(NovaPharmaSale.quantity * NovaPharmaSale.price) + func.sum(GilbertSale.quantity * GilbertSale.price)
+        func.sum(HRASale.quantity * HRASale.price) + func.sum(ramopharmaSale.quantity * ramopharmaSale.price)
     ).filter(
         or_(
-            NovaPharmaSale.project == 'nasderm',
-            GilbertSale.project == 'nasderm'
+            HRASale.project == 'nasderm',
+            ramopharmaSale.project == 'nasderm'
         )
     ).scalar() or 0
     
@@ -881,18 +881,18 @@ def nasderm_dashboard():
     
     # Récupérer le chiffre d'affaire mensuel pour NASDERM
     monthly_revenue = db.session.query(
-        func.strftime('%Y-%m', NovaPharmaSale.date).label('month'),
-        func.sum(NovaPharmaSale.quantity * NovaPharmaSale.price).label('nova_pharma_revenue'),
-        func.sum(GilbertSale.quantity * GilbertSale.price).label('gilbert_revenue')
-    ).outerjoin(GilbertSale, func.strftime('%Y-%m', GilbertSale.date) == func.strftime('%Y-%m', NovaPharmaSale.date)) \
-     .filter(or_(NovaPharmaSale.project == 'nasderm', GilbertSale.project == 'nasderm')) \
+        func.strftime('%Y-%m', HRASale.date).label('month'),
+        func.sum(HRASale.quantity * HRASale.price).label('nova_pharma_revenue'),
+        func.sum(ramopharmaSale.quantity * ramopharmaSale.price).label('ramopharma_revenue')
+    ).outerjoin(ramopharmaSale, func.strftime('%Y-%m', ramopharmaSale.date) == func.strftime('%Y-%m', HRASale.date)) \
+     .filter(or_(HRASale.project == 'nasderm', ramopharmaSale.project == 'nasderm')) \
      .group_by('month').order_by('month').all()
     
     # Préparer les données pour le graphique
     monthly_revenue_labels = [row.month for row in monthly_revenue]
     monthly_revenue_nova = [row.nova_pharma_revenue or 0 for row in monthly_revenue]
-    monthly_revenue_gilbert = [row.gilbert_revenue or 0 for row in monthly_revenue]
-    monthly_revenue_total = [sum(x) for x in zip(monthly_revenue_nova, monthly_revenue_gilbert)]
+    monthly_revenue_ramopharma = [row.ramopharma_revenue or 0 for row in monthly_revenue]
+    monthly_revenue_total = [sum(x) for x in zip(monthly_revenue_nova, monthly_revenue_ramopharma)]
     
     # Récupérer le classement des commerciaux (Top 5)
     top_5_commerciaux = db.session.query(
@@ -908,7 +908,7 @@ def nasderm_dashboard():
         'nasderm_dashboard.html',
         monthly_revenue_labels=monthly_revenue_labels,
         monthly_revenue_nova=monthly_revenue_nova,
-        monthly_revenue_gilbert=monthly_revenue_gilbert,
+        monthly_revenue_ramopharma=monthly_revenue_ramopharma,
         monthly_revenue_total=monthly_revenue_total,
         top_5_commerciaux=top_5_commerciaux,
         commerciaux=commerciaux,
@@ -1001,15 +1001,15 @@ def admin_add_nova_pharma_sale():
         return redirect(url_for('dashboard'))
 
     form = AdminSaleForm()
-    form.product_id.choices = [(p.id, p.name) for p in NovaPharmaProduct.query.all()]
+    form.product_id.choices = [(p.id, p.name) for p in HRAProduct.query.all()]
 
     if form.validate_on_submit():
-        product = NovaPharmaProduct.query.get(form.product_id.data)
+        product = HRAProduct.query.get(form.product_id.data)
         quantity = form.quantity.data
         entrepot = form.entrepot.data
         sale_date = form.sale_date.data
 
-        sale = NovaPharmaSale(
+        sale = HRASale(
             product_id=product.id,
             quantity=quantity,
             price=product.default_price * quantity,
@@ -1041,13 +1041,13 @@ def add_nova_pharma_product():
         flash("Accès refusé", "danger")
         return redirect(url_for('dashboard'))
 
-    form = AddNovaPharmaProductForm()
+    form = AddHRAProductForm()
 
     if form.validate_on_submit():
         name = form.name.data
         price = form.price.data
 
-        product = NovaPharmaProduct(
+        product = HRAProduct(
             name=name,
             default_price=price,
             stock_duopharm=0,
@@ -1062,23 +1062,23 @@ def add_nova_pharma_product():
 
     return render_template('add_nova_pharma_product.html', form=form)
 
-@app.route('/admin/gilbert/sale', methods=['GET', 'POST'])
+@app.route('/admin/ramopharma/sale', methods=['GET', 'POST'])
 @login_required
-def admin_add_gilbert_sale():
+def admin_add_ramopharma_sale():
     if current_user.role != 'admin':
         flash("Accès refusé", "danger")
         return redirect(url_for('dashboard'))
 
-    form = AdminGilbertSaleForm()
-    form.product_id.choices = [(p.id, p.name) for p in GilbertProduct.query.all()]
+    form = AdminramopharmaSaleForm()
+    form.product_id.choices = [(p.id, p.name) for p in ramopharmaProduct.query.all()]
 
     if form.validate_on_submit():
-        product = GilbertProduct.query.get(form.product_id.data)
+        product = ramopharmaProduct.query.get(form.product_id.data)
         quantity = form.quantity.data
         entrepot = form.entrepot.data
         sale_date = form.sale_date.data
 
-        sale = GilbertSale(
+        sale = ramopharmaSale(
             product_id=product.id,
             quantity=quantity,
             price=product.default_price * quantity,
@@ -1098,49 +1098,49 @@ def admin_add_gilbert_sale():
 
         db.session.commit()
         flash("Vente enregistrée avec succès", "success")
-        return redirect(url_for('admin_add_gilbert_sale'))
+        return redirect(url_for('admin_add_ramopharma_sale'))
 
-    return render_template('admin_add_gilbert_sale.html', form=form)
+    return render_template('admin_add_ramopharma_sale.html', form=form)
 
 
-@app.route('/admin/gilbert/product/add', methods=['GET', 'POST'])
+@app.route('/admin/ramopharma/product/add', methods=['GET', 'POST'])
 @login_required
-def add_gilbert_product():
+def add_ramopharma_product():
     if current_user.role != 'admin':
         flash("Accès refusé", "danger")
         return redirect(url_for('dashboard'))
 
-    form = AddGilbertProductForm()
+    form = AddramopharmaProductForm()
     if form.validate_on_submit():
-        product = GilbertProduct(
+        product = ramopharmaProduct(
             name=form.name.data,
             default_price=form.price.data
         )
         db.session.add(product)
         db.session.commit()
         flash("Produit ajouté avec succès", "success")
-        return redirect(url_for('add_gilbert_product'))
+        return redirect(url_for('add_ramopharma_product'))
 
-    return render_template('add_gilbert_product.html', form=form)
+    return render_template('add_ramopharma_product.html', form=form)
 
 
-@app.route('/admin/eric_favre/sale', methods=['GET', 'POST'])
+@app.route('/admin/farmalfa_favre/sale', methods=['GET', 'POST'])
 @login_required
-def admin_add_eric_favre_sale():
+def admin_add_farmalfa_favre_sale():
     if current_user.role != 'admin':
         flash("Accès refusé", "danger")
         return redirect(url_for('dashboard'))
 
-    form = AdminEricFavreSaleForm()
-    form.product_id.choices = [(p.id, p.name) for p in EricFavreProduct.query.all()]
+    form = AdminfarmalfaSaleForm()
+    form.product_id.choices = [(p.id, p.name) for p in farmalfaProduct.query.all()]
 
     if form.validate_on_submit():
-        product = EricFavreProduct.query.get(form.product_id.data)
+        product = farmalfaProduct.query.get(form.product_id.data)
         quantity = form.quantity.data
         entrepot = form.entrepot.data
         sale_date = form.sale_date.data
 
-        sale = EricFavreSale(
+        sale = farmalfaSale(
             product_id=product.id,
             quantity=quantity,
             price=product.default_price * quantity,
@@ -1160,30 +1160,30 @@ def admin_add_eric_favre_sale():
 
         db.session.commit()
         flash("Vente enregistrée avec succès", "success")
-        return redirect(url_for('admin_add_eric_favre_sale'))
+        return redirect(url_for('admin_add_farmalfa_favre_sale'))
 
-    return render_template('admin_add_eric_favre_sale.html', form=form)
+    return render_template('admin_add_farmalfa_favre_sale.html', form=form)
 
 
-@app.route('/admin/eric_favre/product/add', methods=['GET', 'POST'])
+@app.route('/admin/farmalfa_favre/product/add', methods=['GET', 'POST'])
 @login_required
-def add_eric_favre_product():
+def add_farmalfa_favre_product():
     if current_user.role != 'admin':
         flash("Accès refusé", "danger")
         return redirect(url_for('dashboard'))
 
-    form = AddEricFavreProductForm()
+    form = AddfarmalfaProductForm()
     if form.validate_on_submit():
-        product = EricFavreProduct(
+        product = farmalfaProduct(
             name=form.name.data,
             default_price=form.price.data
         )
         db.session.add(product)
         db.session.commit()
         flash("Produit ajouté avec succès", "success")
-        return redirect(url_for('add_eric_favre_product'))
+        return redirect(url_for('add_farmalfa_favre_product'))
 
-    return render_template('add_eric_favre_product.html', form=form)
+    return render_template('add_farmalfa_favre_product.html', form=form)
 
 @app.route('/admin/trois_chene/sale', methods=['GET', 'POST'])
 @login_required
@@ -1192,16 +1192,16 @@ def admin_add_trois_chene_sale():
         flash("Accès refusé", "danger")
         return redirect(url_for('dashboard'))
 
-    form = AdminTroisCheneSaleForm()
-    form.product_id.choices = [(p.id, p.name) for p in TroisCheneProduct.query.all()]
+    form = AdminopalaSaleForm()
+    form.product_id.choices = [(p.id, p.name) for p in opalaProduct.query.all()]
 
     if form.validate_on_submit():
-        product = TroisCheneProduct.query.get(form.product_id.data)
+        product = opalaProduct.query.get(form.product_id.data)
         quantity = form.quantity.data
         entrepot = form.entrepot.data
         sale_date = form.sale_date.data
 
-        sale = TroisCheneSale(
+        sale = opalaSale(
             product_id=product.id,
             quantity=quantity,
             price=product.default_price * quantity,
@@ -1232,9 +1232,9 @@ def add_trois_chene_product():
         flash("Accès refusé", "danger")
         return redirect(url_for('dashboard'))
 
-    form = AddTroisCheneProductForm()
+    form = AddopalaProductForm()
     if form.validate_on_submit():
-        product = TroisCheneProduct(
+        product = opalaProduct(
             name=form.name.data,
             default_price=form.price.data
         )
@@ -1296,27 +1296,27 @@ def admin_prospections():
     prospections = Prospection.query.join(User).order_by(Prospection.date.desc()).all()
     return render_template('admin_prospections.html', prospections=prospections)
 
-@app.route('/eric_favre_sales', methods=['GET', 'POST'])
+@app.route('/farmalfa_favre_sales', methods=['GET', 'POST'])
 @login_required
-def eric_favre_sales():
+def farmalfa_favre_sales():
     if current_user.project != 'nasmedic' and current_user.role != 'admin':
         flash('Accès non autorisé.', 'error')
         return redirect(url_for('home'))
     
-    products = EricFavreProduct.query.all()
+    products = farmalfaProduct.query.all()
     
     if request.method == 'POST':
         sale_date = request.form.get('sale_date')
         if not sale_date:
             flash('Veuillez saisir une date.', 'error')
-            return redirect(url_for('eric_favre_sales'))
+            return redirect(url_for('farmalfa_favre_sales'))
         
         for product in products:
             quantity = request.form.get(f'quantity_{product.id}')
             price = request.form.get(f'price_{product.id}', product.default_price)
             
             if quantity and int(quantity) > 0:
-                sale = EricFavreSale(
+                sale = farmalfaSale(
                     product_id=product.id,
                     quantity=int(quantity),
                     price=float(price),
@@ -1327,10 +1327,10 @@ def eric_favre_sales():
                 db.session.add(sale)
         
         db.session.commit()
-        flash('Ventes Eric Favre enregistrées avec succès', 'success')
-        return redirect(url_for('eric_favre_sales'))
+        flash('Ventes farmalfa enregistrées avec succès', 'success')
+        return redirect(url_for('farmalfa_favre_sales'))
     
-    return render_template('eric_favre_sales.html', products=products)
+    return render_template('farmalfa_favre_sales.html', products=products)
 
 @app.route('/trois_chene_sales', methods=['GET', 'POST'])
 @login_required
@@ -1339,7 +1339,7 @@ def trois_chene_sales():
         flash('Accès non autorisé.', 'error')
         return redirect(url_for('home'))
     
-    products = TroisCheneProduct.query.all()
+    products = opalaProduct.query.all()
     
     if request.method == 'POST':
         sale_date = request.form.get('sale_date')
@@ -1352,7 +1352,7 @@ def trois_chene_sales():
             price = request.form.get(f'price_{product.id}', product.default_price)
             
             if quantity and int(quantity) > 0:
-                sale = TroisCheneSale(
+                sale = opalaSale(
                     product_id=product.id,
                     quantity=int(quantity),
                     price=float(price),
@@ -1375,7 +1375,7 @@ def nova_pharma_sales():
         flash('Accès non autorisé.', 'error')
         return redirect(url_for('home'))
     
-    products = NovaPharmaProduct.query.all()
+    products = HRAProduct.query.all()
     
     if request.method == 'POST':
         sale_date = request.form.get('sale_date')
@@ -1388,7 +1388,7 @@ def nova_pharma_sales():
             price = request.form.get(f'price_{product.id}', product.default_price)
             
             if quantity and int(quantity) > 0:
-                sale = NovaPharmaSale(
+                sale = HRASale(
                     product_id=product.id,
                     quantity=int(quantity),
                     price=float(price),
@@ -1399,32 +1399,32 @@ def nova_pharma_sales():
                 db.session.add(sale)
         
         db.session.commit()
-        flash('Ventes Nova Pharma enregistrées avec succès', 'success')
+        flash('Ventes HRA enregistrées avec succès', 'success')
         return redirect(url_for('nova_pharma_sales'))
     
     return render_template('nova_pharma_sales.html', products=products)
 
-@app.route('/gilbert_sales', methods=['GET', 'POST'])
+@app.route('/ramopharma_sales', methods=['GET', 'POST'])
 @login_required
-def gilbert_sales():
+def ramopharma_sales():
     if current_user.project != 'nasderm' and current_user.role != 'admin':
         flash('Accès non autorisé.', 'error')
         return redirect(url_for('home'))
     
-    products = GilbertProduct.query.all()
+    products = ramopharmaProduct.query.all()
     
     if request.method == 'POST':
         sale_date = request.form.get('sale_date')
         if not sale_date:
             flash('Veuillez saisir une date.', 'error')
-            return redirect(url_for('gilbert_sales'))
+            return redirect(url_for('ramopharma_sales'))
         
         for product in products:
             quantity = request.form.get(f'quantity_{product.id}')
             price = request.form.get(f'price_{product.id}', product.default_price)
             
             if quantity and int(quantity) > 0:
-                sale = GilbertSale(
+                sale = ramopharmaSale(
                     product_id=product.id,
                     quantity=int(quantity),
                     price=float(price),
@@ -1435,10 +1435,10 @@ def gilbert_sales():
                 db.session.add(sale)
         
         db.session.commit()
-        flash('Ventes Gilbert enregistrées avec succès', 'success')
-        return redirect(url_for('gilbert_sales'))
+        flash('Ventes ramopharma enregistrées avec succès', 'success')
+        return redirect(url_for('ramopharma_sales'))
     
-    return render_template('gilbert_sales.html', products=products)
+    return render_template('ramopharma_sales.html', products=products)
 
 @app.route('/monthly_revenue_nasmedic')
 @login_required
@@ -1448,26 +1448,26 @@ def monthly_revenue_nasmedic():
         return redirect(url_for('home'))
 
     monthly_revenue_raw = db.session.query(
-        func.strftime('%Y-%m', EricFavreSale.date).label('month'),
-        func.sum(EricFavreSale.quantity * EricFavreSale.price).label('eric_favre_revenue'),
-        func.sum(TroisCheneSale.quantity * TroisCheneSale.price).label('trois_chene_revenue')
+        func.strftime('%Y-%m', farmalfaSale.date).label('month'),
+        func.sum(farmalfaSale.quantity * farmalfaSale.price).label('farmalfa_favre_revenue'),
+        func.sum(opalaSale.quantity * opalaSale.price).label('trois_chene_revenue')
     ).outerjoin(
-        TroisCheneSale, func.strftime('%Y-%m', TroisCheneSale.date) == func.strftime('%Y-%m', EricFavreSale.date)
+        opalaSale, func.strftime('%Y-%m', opalaSale.date) == func.strftime('%Y-%m', farmalfaSale.date)
     ).filter(
-        or_(EricFavreSale.project == 'nasmedic', TroisCheneSale.project == 'nasmedic')
+        or_(farmalfaSale.project == 'nasmedic', opalaSale.project == 'nasmedic')
     ).group_by('month').order_by('month').all()
 
     monthly_revenue = []
     total = 0.0
     for row in monthly_revenue_raw:
-        eric = float(row.eric_favre_revenue or 0)
+        farmalfa = float(row.farmalfa_favre_revenue or 0)
         trois = float(row.trois_chene_revenue or 0)
-        total += eric + trois
+        total += farmalfa + trois
         monthly_revenue.append({
             'month': row.month,
-            'eric_favre': f"{eric:.2f}",
+            'farmalfa_favre': f"{farmalfa:.2f}",
             'trois_chene': f"{trois:.2f}",
-            'total': f"{eric + trois:.2f}"
+            'total': f"{farmalfa + trois:.2f}"
         })
 
     return render_template('monthly_revenue_nasmedic.html', monthly_revenue=monthly_revenue, total=f"{total:.2f}")
@@ -1480,29 +1480,29 @@ def monthly_revenue_nasderm():
         flash('Accès non autorisé.', 'error')
         return redirect(url_for('home'))
 
-    gilbert_sale_alias = aliased(GilbertSale)
+    ramopharma_sale_alias = aliased(ramopharmaSale)
 
     monthly_revenue_raw = db.session.query(
-        func.strftime('%Y-%m', NovaPharmaSale.date).label('month'),
-        func.sum(NovaPharmaSale.quantity * NovaPharmaSale.price).label('nova_pharma_revenue'),
-        func.sum(gilbert_sale_alias.quantity * gilbert_sale_alias.price).label('gilbert_revenue')
+        func.strftime('%Y-%m', HRASale.date).label('month'),
+        func.sum(HRASale.quantity * HRASale.price).label('nova_pharma_revenue'),
+        func.sum(ramopharma_sale_alias.quantity * ramopharma_sale_alias.price).label('ramopharma_revenue')
     ).outerjoin(
-        gilbert_sale_alias, func.strftime('%Y-%m', gilbert_sale_alias.date) == func.strftime('%Y-%m', NovaPharmaSale.date)
+        ramopharma_sale_alias, func.strftime('%Y-%m', ramopharma_sale_alias.date) == func.strftime('%Y-%m', HRASale.date)
     ).filter(
-        or_(NovaPharmaSale.project == 'nasderm', gilbert_sale_alias.project == 'nasderm')
+        or_(HRASale.project == 'nasderm', ramopharma_sale_alias.project == 'nasderm')
     ).group_by('month').order_by('month').all()
 
     monthly_revenue = []
     total = 0.0
     for row in monthly_revenue_raw:
         nova = float(row.nova_pharma_revenue or 0)
-        gilbert = float(row.gilbert_revenue or 0)
-        total += nova + gilbert
+        ramopharma = float(row.ramopharma_revenue or 0)
+        total += nova + ramopharma
         monthly_revenue.append({
             'month': row.month,
             'nova_pharma': f"{nova:.2f}",
-            'gilbert': f"{gilbert:.2f}",
-            'total': f"{nova + gilbert:.2f}"
+            'ramopharma': f"{ramopharma:.2f}",
+            'total': f"{nova + ramopharma:.2f}"
         })
 
     return render_template('monthly_revenue_nasderm.html', monthly_revenue=monthly_revenue, total=f"{total:.2f}")
@@ -1514,28 +1514,28 @@ def monthly_revenue_detail_nasmedic(month):
         flash('Accès non autorisé.', 'error')
         return redirect(url_for('home'))
 
-    eric_favre_sales = db.session.query(
-        EricFavreProduct.name,
-        func.sum(EricFavreSale.quantity).label('total_quantity'),
-        func.sum(EricFavreSale.quantity * EricFavreSale.price).label('total_revenue')
-    ).join(EricFavreProduct, EricFavreSale.product_id == EricFavreProduct.id).filter(
-        func.strftime('%Y-%m', EricFavreSale.date) == month,
-        EricFavreSale.project == 'nasmedic'
-    ).group_by(EricFavreProduct.name).all()
+    farmalfa_favre_sales = db.session.query(
+        farmalfaProduct.name,
+        func.sum(farmalfaSale.quantity).label('total_quantity'),
+        func.sum(farmalfaSale.quantity * farmalfaSale.price).label('total_revenue')
+    ).join(farmalfaProduct, farmalfaSale.product_id == farmalfaProduct.id).filter(
+        func.strftime('%Y-%m', farmalfaSale.date) == month,
+        farmalfaSale.project == 'nasmedic'
+    ).group_by(farmalfaProduct.name).all()
 
     trois_chene_sales = db.session.query(
-        TroisCheneProduct.name,
-        func.sum(TroisCheneSale.quantity).label('total_quantity'),
-        func.sum(TroisCheneSale.quantity * TroisCheneSale.price).label('total_revenue')
-    ).join(TroisCheneProduct, TroisCheneSale.product_id == TroisCheneProduct.id).filter(
-        func.strftime('%Y-%m', TroisCheneSale.date) == month,
-        TroisCheneSale.project == 'nasmedic'
-    ).group_by(TroisCheneProduct.name).all()
+        opalaProduct.name,
+        func.sum(opalaSale.quantity).label('total_quantity'),
+        func.sum(opalaSale.quantity * opalaSale.price).label('total_revenue')
+    ).join(opalaProduct, opalaSale.product_id == opalaProduct.id).filter(
+        func.strftime('%Y-%m', opalaSale.date) == month,
+        opalaSale.project == 'nasmedic'
+    ).group_by(opalaProduct.name).all()
 
     return render_template(
         'monthly_revenue_detail_nasmedic.html',
         month=month,
-        eric_favre_sales=eric_favre_sales,
+        farmalfa_favre_sales=farmalfa_favre_sales,
         trois_chene_sales=trois_chene_sales
     )
 
@@ -1548,28 +1548,28 @@ def monthly_revenue_detail_nasderm(month):
         return redirect(url_for('home'))
 
     nova_pharma_sales = db.session.query(
-        NovaPharmaProduct.name,
-        func.sum(NovaPharmaSale.quantity).label('total_quantity'),
-        func.sum(NovaPharmaSale.quantity * NovaPharmaSale.price).label('total_revenue')
-    ).join(NovaPharmaProduct, NovaPharmaSale.product_id == NovaPharmaProduct.id).filter(
-        func.strftime('%Y-%m', NovaPharmaSale.date) == month,
-        NovaPharmaSale.project == 'nasderm'
-    ).group_by(NovaPharmaProduct.name).all()
+        HRAProduct.name,
+        func.sum(HRASale.quantity).label('total_quantity'),
+        func.sum(HRASale.quantity * HRASale.price).label('total_revenue')
+    ).join(HRAProduct, HRASale.product_id == HRAProduct.id).filter(
+        func.strftime('%Y-%m', HRASale.date) == month,
+        HRASale.project == 'nasderm'
+    ).group_by(HRAProduct.name).all()
 
-    gilbert_sales = db.session.query(
-        GilbertProduct.name,
-        func.sum(GilbertSale.quantity).label('total_quantity'),
-        func.sum(GilbertSale.quantity * GilbertSale.price).label('total_revenue')
-    ).join(GilbertProduct, GilbertSale.product_id == GilbertProduct.id).filter(
-        func.strftime('%Y-%m', GilbertSale.date) == month,
-        GilbertSale.project == 'nasderm'
-    ).group_by(GilbertProduct.name).all()
+    ramopharma_sales = db.session.query(
+        ramopharmaProduct.name,
+        func.sum(ramopharmaSale.quantity).label('total_quantity'),
+        func.sum(ramopharmaSale.quantity * ramopharmaSale.price).label('total_revenue')
+    ).join(ramopharmaProduct, ramopharmaSale.product_id == ramopharmaProduct.id).filter(
+        func.strftime('%Y-%m', ramopharmaSale.date) == month,
+        ramopharmaSale.project == 'nasderm'
+    ).group_by(ramopharmaProduct.name).all()
 
     return render_template(
         'monthly_revenue_detail_nasderm.html',
         month=month,
         nova_pharma_sales=nova_pharma_sales,
-        gilbert_sales=gilbert_sales
+        ramopharma_sales=ramopharma_sales
     )
 
 
@@ -1649,7 +1649,7 @@ def create_initial_data():
                     project=project
                 ))
         
-        # Produits Nova Pharma
+        # Produits HRA
         nova_pharma_products = [
             ("HYFAC GEL NETTOYANT FLC 150ML", 3.5),
             ("HYFAC GEL NETTOYANT TB 300ML", 3.5),
@@ -1657,36 +1657,36 @@ def create_initial_data():
         ]
         
         for name, price in nova_pharma_products:
-            if not NovaPharmaProduct.query.filter_by(name=name).first():
-                db.session.add(NovaPharmaProduct(
+            if not HRAProduct.query.filter_by(name=name).first():
+                db.session.add(HRAProduct(
                     name=name,
                     default_price=price
                 ))
         
-        # Produits Gilbert
-        gilbert_products = [
+        # Produits ramopharma
+        ramopharma_products = [
             ("ELLE TEST BTE DE 1 TEST GROSSESSE", 3.5),
             ("MOUSTIDOSE SPRAY REPULSIF ZONE INFESTEES IR3535 +12M  100ML", 3.5),
             # ... (liste complète des produits)
         ]
         
-        for name, price in gilbert_products:
-            if not GilbertProduct.query.filter_by(name=name).first():
-                db.session.add(GilbertProduct(
+        for name, price in ramopharma_products:
+            if not ramopharmaProduct.query.filter_by(name=name).first():
+                db.session.add(ramopharmaProduct(
                     name=name,
                     default_price=price
                 ))
         
-        # Produits Eric Favre
-        eric_favre_products = [
+        # Produits farmalfa
+        farmalfa_favre_products = [
             ("Chronoerect", 3.58),
             ("Special Kid calcium", 2.65),
             # ... (liste complète des produits)
         ]
         
-        for name, price in eric_favre_products:
-            if not EricFavreProduct.query.filter_by(name=name).first():
-                db.session.add(EricFavreProduct(
+        for name, price in farmalfa_favre_products:
+            if not farmalfaProduct.query.filter_by(name=name).first():
+                db.session.add(farmalfaProduct(
                     name=name,
                     default_price=price
                 ))
@@ -1699,8 +1699,8 @@ def create_initial_data():
         ]
         
         for name, price in trois_chene_products:
-            if not TroisCheneProduct.query.filter_by(name=name).first():
-                db.session.add(TroisCheneProduct(
+            if not opalaProduct.query.filter_by(name=name).first():
+                db.session.add(opalaProduct(
                     name=name,
                     default_price=price
                 ))
