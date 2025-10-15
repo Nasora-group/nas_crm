@@ -11,10 +11,10 @@
     {% if current_user.role == 'admin' %}
     <hr>
     <h5>🛠️ Admin - NASDERM</h5>
-    <a href="{{ url_for('admin_add_nova_pharma_sale') }}">➕ Vente Nova Pharma</a>
-    <a href="{{ url_for('admin_add_gilbert_sale') }}">➕ Vente Gilbert</a>
-    <a href="{{ url_for('add_nova_pharma_product') }}">🆕 Produit Nova Pharma</a>
-    <a href="{{ url_for('add_gilbert_product') }}">🆕 Produit Gilbert</a>
+    <a href="{{ url_for('admin_add_HRA_sale') }}">➕ Vente HRA</a>
+    <a href="{{ url_for('admin_add_ramopharma_sale') }}">➕ Vente ramopharma</a>
+    <a href="{{ url_for('add_HRA_product') }}">🆕 Produit HRA</a>
+    <a href="{{ url_for('add_ramopharma_product') }}">🆕 Produit ramopharma</a>
     {% endif %}
 </div>
 
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: {{ monthly_revenue_labels|tojson }},
             datasets: [
                 {
-                    label: 'Nova Pharma',
+                    label: 'HRA',
                     data: {{ monthly_revenue_nova|tojson }},
                     borderColor: '#4a6fa5',
                     backgroundColor: 'rgba(74, 111, 165, 0.1)',
@@ -163,8 +163,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     fill: true
                 },
                 {
-                    label: 'Gilbert',
-                    data: {{ monthly_revenue_gilbert|tojson }},
+                    label: 'ramopharma',
+                    data: {{ monthly_revenue_ramopharma|tojson }},
                     borderColor: '#e74c3c',
                     backgroundColor: 'rgba(231, 76, 60, 0.1)',
                     tension: 0.3,
