@@ -11,10 +11,10 @@
     {% if current_user.role == 'admin' %}
     <hr>
     <h5>🛠️ Admin - NASMEDIC</h5>
-    <a href="{{ url_for('admin_add_eric_favre_sale') }}">➕ Vente Eric Favre</a>
-    <a href="{{ url_for('admin_add_trois_chene_sale') }}">➕ Vente 3 Chênes</a>
-    <a href="{{ url_for('add_eric_favre_product') }}">🆕 Produit Eric Favre</a>
-    <a href="{{ url_for('add_trois_chene_product') }}">🆕 Produit 3 Chênes</a>
+    <a href="{{ url_for('admin_add_farmalfa_sale') }}">➕ Vente farmalfa</a>
+    <a href="{{ url_for('admin_add_opala_sale') }}">➕ Vente opala</a>
+    <a href="{{ url_for('add_farmalfa_product') }}">🆕 Produit farmalfa</a>
+    <a href="{{ url_for('add_opala_product') }}">🆕 Produit opala</a>
     {% endif %}
 </div>
 
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: {{ monthly_revenue_labels|tojson }},
             datasets: [
                 {
-                    label: 'Eric Favre',
+                    label: 'farmalfa',
                     data: {{ monthly_revenue_eric|tojson }},
                     borderColor: '#4a6fa5',
                     backgroundColor: 'rgba(74, 111, 165, 0.1)',
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     fill: true
                 },
                 {
-                    label: '3 Chênes Pharma',
+                    label: 'opala Pharma',
                     data: {{ monthly_revenue_trois|tojson }},
                     borderColor: '#e74c3c',
                     backgroundColor: 'rgba(231, 76, 60, 0.1)',
